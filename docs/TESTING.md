@@ -7,7 +7,7 @@
 ## 1. 如何运行
 
 ```bash
-npm test              # 全部 38 个用例（node:test 内置测试运行器，无第三方依赖）
+npm test              # 全部 39 个用例（node:test 内置测试运行器，无第三方依赖）
 npm run test:verbose  # 带用例名的可读输出
 npm run smoke         # 前端渲染冒烟测试（14 项检查，无需真实浏览器）
 npm run build         # 打包免安装单文件页面
@@ -17,8 +17,8 @@ npm run verify        # 上面三项依次跑完
 预期结果：
 
 ```
-# tests 38
-# pass 38
+# tests 39
+# pass 39
 # fail 0
 
 前端渲染冒烟测试
@@ -35,7 +35,7 @@ npm run verify        # 上面三项依次跑完
 | --- | --- | --- |
 | `test/pit.test.js` | 6 | **时点闸门**：边界、缺失时点、不可解析时点、披露时滞 |
 | `test/quality.test.js` | 8 | **数据质量**：缺失 / 冲突 / 过期 / 来源失败 / 无证据阻断 / 降级留档 |
-| `test/pipeline.test.js` | 12 | **主链路 + 合规 + 可追溯性 + 极端边界** |
+| `test/pipeline.test.js` | 13 | **主链路 + 合规 + 可追溯性 + 极端边界 + 时点闸门单调性** |
 | `test/server.test.js` | 12 | **HTTP 接口 + 三类故障注入 + 路径穿越** |
 | `scripts/smoke-ui.js` | 14 检查 | **前端渲染**：区块完整性、表格行数、无脏输出、交互切换、降级展示 |
 
@@ -68,7 +68,8 @@ npm run verify        # 上面三项依次跑完
 | `时点缺失或不可解析的证据进入 unknown` | 缺少时间与 `"not-a-date"` 都进 `unknown`，并各产生一条 `EVIDENCE_TIME_MISSING`；**断言 unknown 不泄漏进 exAnte** |
 | `决策时点不可解析时全部降级为 unknown` | 产出 `DECISION_TIME_UNPARSEABLE`（level=error），`exAnte`/`exPost` 均为空 |
 | `当日收盘价（15:00）不得成为 14:20 决策的事前证据` | 事前最新收盘必须是 `2024-03-08`（决策日的前一交易日），而非 03-11 |
-| `把决策时点后移会让原本「事前」的证据落入「事后」分区` | `asOfOverride` 之后 `exAnteCount` 增大 |
+| `把决策时点后移会让原本「事后」的证据被纳入「事前」分区` | `asOfOverride` 之后 `exAnteCount` 增大、`exPostCount` 减小（两个方向都断言，防止搞反「事前/事后」的迁移方向） |
+| `时点闸门单调性：决策时点后移，事前证据只增不减、事后证据只减不增` | 跨 `+0/+1/+7/+30/+90` 天逐档比较，并断言端点严格不等（防止断言空转） |
 | `披露时滞：2023 年报的数据点在 2024-01-08 决策时不可得` | 事前证据中不得出现 `asOf=2023-12-31` 的财报点；且所有事前点的 `publishedAt ≤ decidedAt` |
 
 ---

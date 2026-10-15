@@ -62,11 +62,12 @@ test('主链路：当日收盘价（15:00）不得成为 14:20 决策的事前�
   assert.ok(prevClose.startsWith('2024-03-08'), `事前最新收盘应为 2024-03-08，实际 ${prevClose}`);
 });
 
-test('把决策时点后移会让原本「事前」的证据落入「事后」分区', () => {
+test('把决策时点后移会让原本「事后」的证据被纳入「事前」分区', () => {
   const ds = loadDataset();
   const base = buildReport(ds, 'D-2024-0311-A');
   const shifted = buildReport(ds, 'D-2024-0311-A', { asOfOverride: '2024-04-01T10:00:00+08:00' });
   assert.ok(shifted.pit.exAnteCount > base.pit.exAnteCount, '后移决策时点应能纳入更多事前证据');
+  assert.ok(shifted.pit.exPostCount < base.pit.exPostCount, '原先的事后证据应相应减少——信息是从「事后」迁入「事前」');
   assert.ok(shifted.pit.eventExAnteCount >= base.pit.eventExAnteCount, '原本的事后事件应被重新纳为事前');
 });
 

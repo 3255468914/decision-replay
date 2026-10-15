@@ -162,3 +162,36 @@ test('极端边界：数据点极少时不臆断，相关规则标记为「未�
   assert.equal(r.attribution.find((a) => a.id === 'A-3'), undefined);
   assert.ok(r.uncertainty.some((u) => u.id === 'U-2'));
 });
+
+/**
+ * 回归来源：界面上「决策时点闸门实验」的提示文案曾把方向写反
+ * （声称"时点后移 → 事前证据被移入事后"，实际相反）。
+ * 文案方向难以自动断言，但底层的**单调性**可以：时点越靠后，可得信息只增不减。
+ * 这条断言把"方向"钉死在实现层面，任何反转都会立刻失败。
+ */
+test('时点闸门单调性：决策时点后移，事前证据只增不减、事后证据只减不增', () => {
+  const d = ds.decisions.find((x) => x.id === 'D-2024-0311-A');
+  const at = (off) =>
+    new Date(Date.parse(d.decidedAt) + off * 86400000 + 8 * 3600000).toISOString().replace('Z', '+08:00');
+
+  const seq = [0, 1, 7, 30, 90].map((off) => ({ off, r: buildReport(ds, d.id, { asOfOverride: at(off) }) }));
+
+  for (let i = 1; i < seq.length; i += 1) {
+    const prev = seq[i - 1];
+    const cur = seq[i];
+    assert.ok(
+      cur.r.pit.exAnteCount >= prev.r.pit.exAnteCount,
+      `时点后移后事前证据不应减少：+${prev.off} 天 ${prev.r.pit.exAnteCount} → +${cur.off} 天 ${cur.r.pit.exAnteCount}`,
+    );
+    assert.ok(
+      cur.r.pit.exPostCount <= prev.r.pit.exPostCount,
+      `时点后移后事后证据不应增加：+${prev.off} 天 ${prev.r.pit.exPostCount} → +${cur.off} 天 ${cur.r.pit.exPostCount}`,
+    );
+  }
+
+  // 前两个分区不一定单调（财报披露有跳变），但端点必须体现"信息从后往前迁移"
+  const first = seq[0].r.pit;
+  const last = seq.at(-1).r.pit;
+  assert.ok(last.exAnteCount > first.exAnteCount, '时点后移 90 天后事前证据应确有增加');
+  assert.ok(last.exPostCount < first.exPostCount, '时点后移 90 天后事后证据应确有减少');
+});

@@ -26,7 +26,7 @@ cd decision-replay
 # ① 生成构造数据（确定性，可重复，任何人重跑结果一致）
 npm run gen
 
-# ② 跑测试：38 个用例 + 14 项前端渲染检查
+# ② 跑测试：39 个用例 + 14 项前端渲染检查
 npm test
 npm run smoke
 npm run verify              # 测试 + 冒烟 + 打包，一次跑完
@@ -252,7 +252,7 @@ decision-replay/
 │   ├── analyze.js          CLI：跑复盘并导出 JSON / Markdown
 │   ├── smoke-ui.js         前端渲染冒烟测试（DOM 桩，无需浏览器）
 │   └── build-standalone.js 打包免安装单文件页面
-├── test/                   38 个用例（pit / quality / pipeline / server）
+├── test/                   39 个用例（pit / quality / pipeline / server）
 ├── dist/                   构建产物：standalone.html（单文件离线版）
 └── docs/
     ├── AI_USAGE.md         AI 使用与验证记录
@@ -268,7 +268,7 @@ decision-replay/
 ### 8.1 自动化验证
 
 ```bash
-npm test          # 38 个用例：pit 6 / quality 8 / pipeline 12 / server 12
+npm test          # 39 个用例：pit 6 / quality 8 / pipeline 13 / server 12
 npm run smoke     # 14 项前端渲染检查（DOM 桩，无需真实浏览器）
 npm run verify    # 以上两项 + 离线单文件打包，一键跑完
 ```
@@ -326,7 +326,7 @@ npm run analyze:fault
 
 ## 10. 源码仓库
 
-零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 7 次提交，便于按需审阅某一层：
+零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 10 次提交，便于按需审阅某一层：
 
 | 提交 | 覆盖范围 |
 | --- | --- |
@@ -334,9 +334,12 @@ npm run analyze:fault
 | `feat: 核心算法层` | `src/`（时点闸门、数据质量、市场取数、归因、偏差、合规） |
 | `feat: 确定性构造数据集与生成脚本` | `data/`、`scripts/gen-fixtures.js` |
 | `feat: Web 产品` | `server.js`、`public/` |
-| `test: 38 个用例与前端渲染冒烟` | `test/`、`scripts/smoke-ui.js` |
+| `test: 38 个用例与前端渲染冒烟` | `test/`、`scripts/smoke-ui.js`（该提交时点为 38 个，现为 39） |
 | `build: CLI 复盘导出与单文件离线打包` | `scripts/analyze.js`、`scripts/build-standalone.js`、`dist/` |
 | `docs: README 与验证记录` | `README.md`、`docs/` |
+| `fix: 修正「时点闸门实验」提示文案方向写反` | `public/index.html`、`dist/standalone.html` |
+| `docs: 新增 60–180 秒演示视频脚本` | `docs/DEMO_SCRIPT.md` |
+| `test: 补时点闸门单调性断言，并修正方向表述` | `test/`、`docs/`、`README.md` |
 
 **仓库不含任何密钥、账户信息或真实持仓**：`.env` / `*.key` 由 `.gitignore` 排除；
 数据集 `meta.source` 为 `synthetic-fixture`，`data/` 下全部为构造数据。
