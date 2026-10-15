@@ -62,6 +62,16 @@ npm run build
 > 不想运行也能看结果：`docs/samples/`（构造数据）与 `docs/samples/real/`（扶摇真实数据）
 > 各留档了三份 `npm run analyze` 的真实输出。
 
+### 演示视频（90 秒）
+
+一次完整的用户操作链路：**看复盘 → 时点闸门实验 → 切换真实数据源 → 故障降级 → 沉淀导出**。
+全程真实录屏、无幻灯片，6 个镜头对应 6 个可复核的操作。
+
+- **视频**：`<待填 · 见第 10 节与 docs/PUBLISH.md 第 6 节>`
+- **脚本与分镜**：[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)（逐字旁白 + 时间码 + 每个数字的页面出处）
+
+> 视频里出现的每一个数字都能在页面上点出来对照，出处逐条列在脚本第 5 节 —— 不存在"只存在于视频里"的数字。
+
 ### 环境变量
 
 | 变量 | 默认值 | 说明 |
@@ -70,6 +80,9 @@ npm run build
 | `HOST` | `0.0.0.0` | 监听地址。默认监听全部网卡以便云托管；纯本机使用可设为 `127.0.0.1` |
 | `DATA_SOURCE` | `fixture` | 默认数据源，可用 `fixture` / `real`；也可用请求参数 `?source=real` 覆盖 |
 | `FUYAO_API_KEY` | 空 | **仅 `npm run fetch:fuyao` 需要**。写在 `.env`（已被 `.gitignore` 排除）。产品运行时不读这个变量 |
+| `SOURCE_DATE_EPOCH` | 空 | 可选。固定构建/生成时刻，让产物完全可复现；默认取数据快照自带的 `generatedAt` |
+
+完整模板见 [`.env.example`](.env.example)。
 
 **仓库内不含也不应包含任何密钥、账户信息或真实持仓数据。**
 `data/real/` 是拉取后的**数据快照，不含密钥**，因此可以入库 —— 评审无需申请 Key 也能看到真实数据跑出来的报告。
@@ -107,7 +120,7 @@ npm run build
 
 ## 5. 数据来源与口径
 
-### 5.1 当前实现：构造数据（`data/`）
+### 5.1 构造数据（`data/`）：演示 + 回归基线
 
 题目统一规则明确允许"涉及用户画像/持仓时使用匿名或构造数据"。因此：
 
@@ -129,18 +142,6 @@ npm run build
 | `CONFLICT` | `price:300750.SZ` 同一时点两个来源给出不同收盘价 | 该数据点被剔除，不做「任取一个」 |
 | `SOURCE_FAILED` | `turnoverRate:300750.SZ` 带 `sourceError: HTTP 503` | 不参与归因 |
 | `STALE` | `peTtm:300750.SZ` 一个 2022 年的过期快照 | 标记过期，不作强证据 |
-
-### 5.2 时间字段的两层设计（本项目的关键细节）
-
-每个数据点有两个时间，**必须分开**：
-
-```
-asOf         所属时点    "这份数据的统计期"       如 2023-12-31（年报报告期）
-publishedAt  可得时点    "这份数据什么时候能看到" 如 2024-03-20（年报披露日）
-```
-
-时点闸门使用 **`publishedAt`**。如果错误地使用 `asOf`，就会把 2023 年报当成 2024 年 1 月决策时的已知信息 —— 这正是最典型的 point-in-time 错误。
-`data/market.json` 中的 `nplRatio:*` 刻意设置了 **+80 天披露时滞**，测试 `披露时滞` 用例专门守住这条线。
 
 ### 5.2 两套数据源，同一套算法
 
@@ -332,6 +333,7 @@ decision-replay/
     ├── AI_USAGE.md         AI 使用与验证记录
     ├── TESTING.md          测试说明（含用例清单与手工验证步骤）
     ├── DEMO_SCRIPT.md      90 秒演示视频脚本（6 镜分镜表 + 逐字旁白 + 数字出处 + 自检表）
+    ├── PUBLISH.md          ★ 推送到 GitHub 操作指南（含推送前自检与密钥应急处理）
     ├── samples/            三份复盘报告留档（构造数据）
     └── samples/real/       三份复盘报告留档（扶摇真实数据）
 ```
@@ -422,8 +424,8 @@ npm run analyze:fault
    iFinD 仍只预留了配置位（`.env.example` 的 `IFIND_MCP_*`），未实现适配。
 2. **未接入 LLM 润色**：产品运行时不调用大模型（见第 4 节）。若接入，需配套实现"数字一致性校验 + 失败回退"。
 3. **未做组合层面复盘**：目前是单笔决策视角，没有组合敞口、同期其他决策的机会成本、相关性分析。
-4. **演示视频未录制**（可选项）：**90 秒版**脚本已完成——6 镜分镜表、逐字旁白稿（含字数与语速估算）、
-   每个数字的页面出处、对照题目的自检表，以及压到 60 秒的删减方案，见 `docs/DEMO_SCRIPT.md`；录屏需本人操作。
+4. **演示视频已录制、尚未上传**（可选项）：90 秒成片已录好，上传到 GitHub Release 后把链接填进第 2 节
+   「演示视频」即可 —— 上传步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md) 第 6 节，配套脚本与分镜见 `docs/DEMO_SCRIPT.md`。
 5. **未做多决策横向对比与统计**：例如"我在追涨类买入上的平均表现"。数据量（3 条）也不支持。
 6. **未做移动端适配优化**：布局在窄屏可降级为单列，但控件未做触屏优化。
 7. **未做多环境部署 / CI**：已部署到公网（<https://investment-decision-replay.app.workbuddy.host/>，零依赖 Node 单端口服务），
@@ -433,7 +435,7 @@ npm run analyze:fault
 
 ## 10. 源码仓库
 
-零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 15 次提交，便于按需审阅某一层：
+零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 18 次提交，便于按需审阅某一层：
 
 | 提交 | 覆盖范围 |
 | --- | --- |
@@ -452,6 +454,11 @@ npm run analyze:fault
 | `test: 新增扶摇适配层用例并补回归断言` | `test/fuyao.test.js`、`test/pipeline.test.js`（累计 71 个） |
 | `docs: 真实数据接入说明、样例与文档更新` | `docs/DATA_SOURCE.md`、`docs/AI_USAGE.md`、`docs/TESTING.md`、`docs/samples/`、`README.md` |
 | `build: 打包与数据生成改为可复现（生成时刻不再取当前时间）` | `scripts/gen-fixtures.js`、`scripts/analyze.js`、`scripts/build-standalone.js`、`src/report.js`、`src/quality.js`、`test/pipeline.test.js`、`data/meta.json`、`dist/standalone.html` |
+| `docs: 演示视频脚本重写为 90 秒版（6 镜），并纳入真实数据源对照` | `docs/DEMO_SCRIPT.md`、`README.md` |
+| `docs: 修正 90 秒脚本的旁白字数（实测 365 字，非估算的 396）` | `docs/DEMO_SCRIPT.md` |
+| `docs: 新增 GitHub 推送指南，修正过期注释与 README 重复小节` | `docs/PUBLISH.md`、`.env.example`、`.gitattributes`、`README.md` |
+
+> **公开仓库地址**：`<待填>` —— 推送步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md)（含推送前的密钥自检与作者信息处理）。
 
 **仓库不含任何密钥、账户信息或真实持仓**：`.env` / `*.key` 由 `.gitignore` 排除（`.env` 内有本地
 `FUYAO_API_KEY`，已确认未入库）。数据集分两类，`meta.source` 自证来源：

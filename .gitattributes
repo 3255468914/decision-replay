@@ -23,5 +23,7 @@
 *.ico     binary
 *.woff2   binary
 
-# 生成的单文件版：不在语言统计与 diff 视图里展开（1.3MB，由 npm run build 产出）
+# 生成的单文件版：不在语言统计与 diff 视图里展开
+# 约 3.9MB，内联两个数据源（构造 + 扶摇真实）各 15 份预计算报告；
+# 作为交付物保留在仓库里，但由 npm run build 可再生且逐字节可复现。
 dist/standalone.html  linguist-generated=true -diff
