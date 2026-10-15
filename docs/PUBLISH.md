@@ -16,7 +16,7 @@
 # ② 在 GitHub 网页上建一个空仓库（不要勾选任何初始化选项），拿到仓库地址
 
 # ③ 关联并推送
-cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
+cd decision-replay   # 换成你自己的克隆路径
 git remote add origin https://github.com/3255468914/decision-replay.git
 git push -u origin main
 # 弹出浏览器 → 用 GitHub 账号登录授权（本机已装 Git Credential Manager 2.9.0，不需要手建 token）
@@ -84,7 +84,7 @@ git log --format="%h  %an <%ae>" | sort -u -k2
 <summary>原始操作命令（已执行，留档备查）</summary>
 
 ```bash
-cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
+cd decision-replay   # 换成你自己的克隆路径
 
 # ① 更新仓库级配置
 git config user.name "3255468914"
@@ -140,7 +140,7 @@ https://github.com/3255468914/decision-replay.git
 ## 4. 第二步：推送
 
 ```bash
-cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
+cd decision-replay   # 换成你自己的克隆路径
 
 # 关联远端（把 3255468914 换成实际值）
 git remote add origin https://github.com/3255468914/decision-replay.git
@@ -204,7 +204,7 @@ branch 'main' set up to track 'origin/main'.
 
 ---
 
-## 6. 演示视频怎么放
+## 6. 演示视频怎么放（✅ 已完成）
 
 视频**不建议直接提交进仓库**：90 秒的录屏通常几十到几百 MB，会让仓库体积膨胀且无法回退（Git 会永久保留历史）。三个可选方案：
 
@@ -214,12 +214,20 @@ branch 'main' set up to track 'origin/main'.
 | **B. 传到视频平台** | 上传 B 站 / YouTube（可设为"仅链接可见"），把链接写进 README | 播放方便、不占仓库 | 需要流畅播放时 |
 | **C. 放进仓库** | 直接 `git add` 视频 | 一处全有 | ⚠️ 不推荐，除非视频 < 20 MB |
 
+**实际采用：方案 A**。已上传到 Release `v1.0`，实测可下载：
+
+- 附件地址：<https://github.com/3255468914/decision-replay/releases/download/v1.0/default.mp4>
+- 大小 87.3 MB，HTTP 200 可下载
+- ⚠️ 注意附件名被上传流程改成了 `default.mp4`（不是 `演示视频.mp4`）。若希望文件名更清晰，
+  可在 Release 页删除该附件后重新上传并命名 `demo-90s.mp4`，然后同步修改 README 里的链接。
+- 本地 `演示视频.mp4` 为 88 MB，已加入 `.gitignore`（`*.mp4`），**确认不在 git 历史中**。
+
 **推荐组合**：用 **方案 A** 传原文件（保证画质与可下载），同时在 README 里放一句说明。README 里建议加这样一节（`docs/DEMO_SCRIPT.md` 是配套的脚本与分镜）：
 
 ```markdown
 ## 演示视频（90 秒）
 
-- 直接下载：<https://github.com/3255468914/decision-replay/releases/download/v1.0/demo.mp4>
+- 直接下载：<https://github.com/3255468914/decision-replay/releases/download/v1.0/default.mp4>
 - 脚本与分镜：见 [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)
 ```
 
@@ -286,7 +294,7 @@ Windows 上的正常提示，**可以忽略**。本项目已用 `.gitattributes`
 
 ```bash
 # ── 第 2 节：作者信息（可选，只在需要改时执行）────────────────
-cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
+cd decision-replay   # 换成你自己的克隆路径
 git config --unset user.name
 git config --unset user.email
 git filter-branch --env-filter '

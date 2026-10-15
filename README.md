@@ -79,7 +79,7 @@ npm run build
 一次完整的用户操作链路：**看复盘 → 时点闸门实验 → 切换真实数据源 → 故障降级 → 沉淀导出**。
 全程真实录屏、无幻灯片，6 个镜头对应 6 个可复核的操作。
 
-- **视频**：`<待填 · 见第 10 节与 docs/PUBLISH.md 第 6 节>`
+- **视频**：[`演示视频.mp4` · GitHub Release v1.0 附件](https://github.com/3255468914/decision-replay/releases/download/v1.0/default.mp4)（87 MB，90 秒，直接下载）
 - **脚本与分镜**：[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)（逐字旁白 + 时间码 + 每个数字的页面出处）
 
 > 视频里出现的每一个数字都能在页面上点出来对照，出处逐条列在脚本第 5 节 —— 不存在"只存在于视频里"的数字。
@@ -436,8 +436,9 @@ npm run analyze:fault
    iFinD 仍只预留了配置位（`.env.example` 的 `IFIND_MCP_*`），未实现适配。
 2. **未接入 LLM 润色**：产品运行时不调用大模型（见第 4 节）。若接入，需配套实现"数字一致性校验 + 失败回退"。
 3. **未做组合层面复盘**：目前是单笔决策视角，没有组合敞口、同期其他决策的机会成本、相关性分析。
-4. **演示视频已录制、尚未上传**（可选项）：90 秒成片已录好，上传到 GitHub Release 后把链接填进第 2 节
-   「演示视频」即可 —— 上传步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md) 第 6 节，配套脚本与分镜见 `docs/DEMO_SCRIPT.md`。
+4. **演示视频未做二次剪辑与字幕**：90 秒成片已录制并上传（见第 2 节「演示视频」），
+   但无字幕、无转场特效——刻意保留原始录屏，避免"用剪辑掩盖产品细节"。
+   `docs/DEMO_SCRIPT.md` 里的逐字旁白可直接作为后期字幕文案。
 5. **未做多决策横向对比与统计**：例如"我在追涨类买入上的平均表现"。数据量（3 条）也不支持。
 6. **未做移动端适配优化**：布局在窄屏可降级为单列，但控件未做触屏优化。
 7. **未做多环境部署 / CI**：已部署到公网（<https://investment-decision-replay.app.workbuddy.host/>，零依赖 Node 单端口服务），
@@ -474,6 +475,18 @@ npm run analyze:fault
 > **公开仓库地址**：<https://github.com/3255468914/decision-replay> —— 推送步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md)（含推送前的密钥自检与作者信息处理）。
 >
 > 除上表所列，另有若干条纯文档修订提交（数字校对、措辞修正等）未单列。
+
+### 交付物速查
+
+| 交付物 | 位置 |
+| --- | --- |
+| **可操作的产品 URL** | <https://investment-decision-replay.app.workbuddy.host/> |
+| **源代码仓库** | <https://github.com/3255468914/decision-replay> |
+| **演示视频（90 秒）** | <https://github.com/3255468914/decision-replay/releases/download/v1.0/default.mp4> |
+| 免安装离线单文件版 | [`dist/standalone.html`](dist/standalone.html)（3915 KB，双击即开） |
+| AI 使用与验证记录 | [`docs/AI_USAGE.md`](docs/AI_USAGE.md) |
+| 测试说明 | [`docs/TESTING.md`](docs/TESTING.md) |
+| 真实数据接入说明 | [`docs/DATA_SOURCE.md`](docs/DATA_SOURCE.md) |
 
 **仓库不含任何密钥、账户信息或真实持仓**：`.env` / `*.key` 由 `.gitignore` 排除（`.env` 内有本地
 `FUYAO_API_KEY`，已确认未入库）。数据集分两类，`meta.source` 自证来源：
