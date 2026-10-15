@@ -22,6 +22,22 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.resolve(__dirname, '..', 'data');
 
+/**
+ * 数据快照的"生成时刻"。
+ *
+ * 本脚本承诺"任何人重跑结果完全一致"，因此这里绝不能取 `new Date()`：
+ * 那样每次重跑都会让 data/meta.json 变一个字符，git 里出现假变更，
+ * 而且 dist/standalone.html 的预计算报告会跟着一起漂（它的时间戳锚在 meta 上）。
+ * 需要覆盖时可用标准环境变量 SOURCE_DATE_EPOCH。
+ */
+const FIXTURE_GENERATED_AT = (() => {
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  if (epoch && Number.isFinite(Number(epoch))) {
+    return new Date(Number(epoch) * 1000).toISOString();
+  }
+  return '2024-12-31T15:00:00.000Z';
+})();
+
 /* ---------------- 确定性随机 ---------------- */
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -307,7 +323,7 @@ function main() {
         source: 'synthetic-fixture',
         disclaimer: '全部行情、估值、财报与宏观数据均为构造数据，用于演示与自动化测试，不代表任何真实标的的历史或未来表现。',
         generator: 'scripts/gen-fixtures.js',
-        generatedAt: new Date().toISOString(),
+        generatedAt: FIXTURE_GENERATED_AT,
         benchmarkSeries: 'index:000300.SH',
         calendar: '交易日历仅排除周末，未剔除法定节假日与停牌日（见 README「已知边界」）',
         fieldCaliber: {

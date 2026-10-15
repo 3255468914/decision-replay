@@ -26,6 +26,28 @@ const ASSETS = path.join(ROOT, 'dist', 'assets');
 const OFFSETS = [0, 1, 7, 30, 90];
 const FAULTS = ['missing', 'invalid', 'timeout'];
 
+const DEFAULT_BUILD_TS = '2000-01-01T00:00:00.000Z';
+
+/**
+ * 构建时间戳（可复现性）。
+ *
+ * 报告里带 `generatedAt`，如果直接取 `new Date()`，那么"同一份数据 + 同一份代码"
+ * 每次打包都会得到一个只有时间戳不同的新文件 —— git 里就会出现一堆
+ * "4009410 bytes -> 4009410 bytes"的假变更，评审时无法分辨哪些是真的改动。
+ *
+ * 因此这里把时间戳钉死在**数据快照自带的 `generatedAt`** 上：
+ * 它随数据变化（正确的语义："本离线版基于某份数据快照"），但不随打包时刻变化。
+ * 需要覆盖时可用标准环境变量 `SOURCE_DATE_EPOCH`（reproducible-builds 约定）。
+ */
+function resolveBuildTime(snapshotGeneratedAt) {
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  if (epoch && Number.isFinite(Number(epoch))) {
+    return new Date(Number(epoch) * 1000).toISOString();
+  }
+  const t = Date.parse(snapshotGeneratedAt ?? '');
+  return Number.isFinite(t) ? new Date(t).toISOString() : DEFAULT_BUILD_TS;
+}
+
 const FAULT_PAYLOADS = {
   missing: {
     code: 'DATASET_MISSING',
@@ -56,11 +78,15 @@ const shift = (iso, days) => {
 
 function buildOne(sourceId) {
   const ds = loadDataset({ source: sourceId });
+  const generatedAt = resolveBuildTime(ds.meta.generatedAt);
   const reports = {};
   for (const d of ds.decisions) {
     for (const off of OFFSETS) {
       const asOf = off === 0 ? null : shift(d.decidedAt, off);
-      reports[`${d.id}|${off}`] = buildReport(ds, d.id, { asOfOverride: asOf || undefined });
+      reports[`${d.id}|${off}`] = buildReport(ds, d.id, {
+        asOfOverride: asOf || undefined,
+        generatedAt,
+      });
     }
   }
   return {
@@ -105,7 +131,7 @@ function build() {
     })),
     offsets: OFFSETS,
     faults: FAULT_PAYLOADS,
-    builtAt: new Date().toISOString(),
+    builtAt: resolveBuildTime(sources[targets[0].id]?.meta?.generatedAt),
   };
 
   const css = fs.readFileSync(path.join(ROOT, 'public', 'styles.css'), 'utf8');

@@ -7,7 +7,7 @@
 ## 1. 如何运行
 
 ```bash
-npm test              # 全部 70 个用例（node:test 内置测试运行器，无第三方依赖）
+npm test              # 全部 71 个用例（node:test 内置测试运行器，无第三方依赖）
 npm run test:verbose  # 带用例名的可读输出
 npm run smoke         # 前端渲染冒烟测试（14 项检查，无需真实浏览器）
 npm run build         # 打包免安装单文件页面
@@ -17,8 +17,8 @@ npm run verify        # 上面三项依次跑完
 预期结果：
 
 ```
-# tests 70
-# pass 70
+# tests 71
+# pass 71
 # fail 0
 
 前端渲染冒烟测试
@@ -35,7 +35,7 @@ npm run verify        # 上面三项依次跑完
 | --- | --- | --- |
 | `test/pit.test.js` | 6 | **时点闸门**：边界、缺失时点、不可解析时点、披露时滞 |
 | `test/quality.test.js` | 8 | **数据质量**：缺失 / 冲突 / 过期 / 来源失败 / 无证据阻断 / 降级留档 |
-| `test/pipeline.test.js` | 16 | **主链路 + 合规 + 可追溯性 + 极端边界 + 时点闸门单调性 + 归因引用卫生** |
+| `test/pipeline.test.js` | 17 | **主链路 + 合规 + 可追溯性 + 极端边界 + 时点闸门单调性 + 归因引用卫生 + 可复现构建** |
 | `test/server.test.js` | 12 | **HTTP 接口 + 三类故障注入 + 路径穿越 + 数据源参数** |
 | `test/fuyao.test.js` | 28 | **扶摇适配层（离线）**：披露日校验与降级、字段 ID 漂移、TTM/BPS 推导、错误码与重试、密钥不落盘 |
 | `scripts/smoke-ui.js` | 14 检查 | **前端渲染**：区块完整性、表格行数、无脏输出、交互切换、降级展示 |
@@ -47,6 +47,22 @@ npm run verify        # 上面三项依次跑完
 > 另外，`docs/samples/`（构造数据）与 `docs/samples/real/`（扶摇真实数据）下各留档了三份
 > 由 `npm run analyze` 生成的真实输出（Markdown），不运行任何命令也能看到完整的产品输出长什么样，
 > 以及**换数据源后结论如何变化**。
+
+> **构建可复现**：`dist/standalone.html` 里不写当前时刻，而是把报告中的"生成时刻"统一钉在
+> 数据快照自带的 `generatedAt` 上（可用 `SOURCE_DATE_EPOCH` 覆盖）。
+> 因此同一份数据 + 同一份代码反复 `npm run build` 得到**逐字节相同**的文件 ——
+> 否则每次打包都会产生一个"4009410 bytes → 4009410 bytes"的假变更，让人分不清真实改动。
+> 这条性质由 `可复现性：传入 generatedAt 时，报告内所有生成时刻都用同一个值` 守着。
+> 同一约定也用在 `data/meta.json`（`scripts/gen-fixtures.js` 里钉死了 `FIXTURE_GENERATED_AT`）
+> 与归档样例（`--now`）上，所以 `npm run gen` / `npm run verify` 重跑不会在 `git status` 里留下噪音。
+>
+> 归档样例的**确切重生成命令**（`--now` 取各自数据快照的 `meta.generatedAt`）：
+>
+> ```bash
+> npm run analyze -- --out docs/samples            --now 2024-12-31T15:00:00Z
+> npm run analyze -- --source real --out docs/samples/real --now 2026-10-15T11:09:55.645Z
+> rm -f docs/samples/*.json docs/samples/real/*.json   # 只留 Markdown，与仓库既有约定一致
+> ```
 
 ---
 

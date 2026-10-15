@@ -261,3 +261,21 @@ test('证据引用指向的是「决策时点可得的最新一期」，而不�
   assert.equal(claim.value, 27.28, `应引用最新一期（27.28），实际 ${claim.value}`);
   assert.equal(claim.asOf.slice(0, 10), '2024-03-06');
 });
+
+test('可复现性：传入 generatedAt 时，报告内所有生成时刻都用同一个值', () => {
+  // 这条断言守护的是 dist/standalone.html 的可复现构建。
+  // 报告里凡出现"生成时刻"的地方，只要有一处漏传、仍取 new Date()，
+  // 每次 npm run build 都会产出"只有时间戳不同"的假变更，评审时无法分辨真实改动。
+  // 所以这里逐处钉住：generatedAt / quality.checkedAt / nextContext.createdAt。
+  const FIXED = '2024-11-11T11:11:11.000Z';
+  const r = buildReport(loadDataset(), 'D-2024-0311-A', { generatedAt: FIXED });
+
+  assert.equal(r.generatedAt, FIXED, 'report.generatedAt 未采用传入值');
+  assert.equal(r.quality.checkedAt, FIXED, 'quality.checkedAt 未采用传入值');
+  assert.equal(r.nextContext.createdAt, FIXED, 'nextContext.createdAt 未采用传入值');
+
+  // 不传时应回到当前时间，且不得把一个写死的常量漏给运行时
+  const live = buildReport(loadDataset(), 'D-2024-0311-A');
+  assert.notEqual(live.generatedAt, FIXED, '未传 generatedAt 时不应仍为固定值');
+  assert.ok(Number.isFinite(Date.parse(live.generatedAt)), `generatedAt 应是可解析时间，实际 ${live.generatedAt}`);
+});

@@ -96,13 +96,13 @@ function buildReminders(report) {
 }
 
 /** 下一次决策的上下文包：可直接复制到下次的决策记录里 */
-function buildNextContext(report) {
+function buildNextContext(report, generatedAt) {
   const d = report.decision;
   const last = report.attribution.find((a) => a.id === 'A-3');
   return {
     basedOnDecisionId: d.id,
     symbol: d.symbol,
-    createdAt: new Date().toISOString(),
+    createdAt: generatedAt ?? new Date().toISOString(),
     carryOver: {
       previousInvalidation: d.preCommit?.invalidation ?? null,
       previousHorizon: d.horizon ?? null,
@@ -151,6 +151,9 @@ function trimEvidenceTail(list, n) {
 
 export function buildReport(dataset, decisionId, options = {}) {
   const maxPointsPerSeries = options.maxPointsPerSeries ?? 40;
+  // 报告里所有"生成时刻"统一取同一个值：默认当前时间；打包离线版时由调用方钉死，
+  // 以便同一份数据 + 同一份代码产出逐字节相同的 dist/standalone.html（见 build-standalone.js）。
+  const generatedAt = options.generatedAt ?? new Date().toISOString();
   const decision = dataset.decisions.find((d) => d.id === decisionId);
   if (!decision) {
     const err = new Error(`未找到决策记录：${decisionId}`);
@@ -186,6 +189,7 @@ export function buildReport(dataset, decisionId, options = {}) {
   // ---- 数据质量 ----
   const quality = checkQuality(pitRelevant, {
     asOfCutoff: decidedAt,
+    checkedAt: generatedAt,
     staleDays: 7,
     staleness: {
       'price:': 7, // 日频行情：一周未更新即视为过期
@@ -263,7 +267,7 @@ export function buildReport(dataset, decisionId, options = {}) {
     : runBiasRules(ctx);
 
   const report = {
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     asOfDecisionTime: decidedAt,
     decision: effectiveDecision,
     exit,
@@ -307,7 +311,7 @@ export function buildReport(dataset, decisionId, options = {}) {
 
   report.learnings = buildLearnings(report);
   report.reminders = buildReminders(report);
-  report.nextContext = buildNextContext(report);
+  report.nextContext = buildNextContext(report, generatedAt);
   report.summary = buildSummary(report);
 
   // ---- 合规清洗（最后一道闸门）----

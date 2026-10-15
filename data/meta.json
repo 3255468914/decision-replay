@@ -2,7 +2,7 @@
   "source": "synthetic-fixture",
   "disclaimer": "全部行情、估值、财报与宏观数据均为构造数据，用于演示与自动化测试，不代表任何真实标的的历史或未来表现。",
   "generator": "scripts/gen-fixtures.js",
-  "generatedAt": "2026-10-15T08:19:39.037Z",
+  "generatedAt": "2024-12-31T15:00:00.000Z",
   "benchmarkSeries": "index:000300.SH",
   "calendar": "交易日历仅排除周末，未剔除法定节假日与停牌日（见 README「已知边界」）",
   "fieldCaliber": {

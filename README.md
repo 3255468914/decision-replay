@@ -26,7 +26,7 @@ cd decision-replay
 # ① 生成构造数据（确定性，可重复，任何人重跑结果一致）
 npm run gen
 
-# ② 跑测试：70 个用例 + 14 项前端渲染检查
+# ② 跑测试：71 个用例 + 14 项前端渲染检查
 npm test
 npm run smoke
 npm run verify              # 测试 + 冒烟 + 打包，一次跑完
@@ -325,7 +325,7 @@ decision-replay/
 │   ├── analyze.js          CLI：跑复盘并导出 JSON / Markdown（支持 --source / --out）
 │   ├── smoke-ui.js         前端渲染冒烟测试（DOM 桩，无需浏览器）
 │   └── build-standalone.js 打包免安装单文件页面（内联两个数据源）
-├── test/                   70 个用例（pit / quality / pipeline / server / fuyao）
+├── test/                   71 个用例（pit / quality / pipeline / server / fuyao）
 ├── dist/                   构建产物：standalone.html（单文件离线版）
 └── docs/
     ├── DATA_SOURCE.md      ★ 真实数据接入说明（映射口径 + 5 处上游不一致实测记录）
@@ -343,7 +343,7 @@ decision-replay/
 ### 8.1 自动化验证
 
 ```bash
-npm test          # 70 个用例：pit 6 / quality 8 / pipeline 16 / server 12 / fuyao 28
+npm test          # 71 个用例：pit 6 / quality 8 / pipeline 17 / server 12 / fuyao 28
 npm run smoke     # 14 项前端渲染检查（DOM 桩，无需真实浏览器）
 npm run verify    # 以上两项 + 离线单文件打包，一键跑完
 ```
@@ -351,6 +351,10 @@ npm run verify    # 以上两项 + 离线单文件打包，一键跑完
 其中 `test/fuyao.test.js` 是纯离线用例（用构造的响应做输入，不发网络请求），
 覆盖披露日校验与降级、字段 ID 漂移、TTM/每股净资产推导、错误码与重试策略，
 以及一条**密钥不落盘**的卫生检查（扫描 `data/` `dist/` `public/` `docs/` 是否出现 `sk-` 形态的串）。
+
+`dist/standalone.html` 是**可复现构建**：报告里的"生成时刻"统一钉在数据快照的 `generatedAt` 上
+（可用 `SOURCE_DATE_EPOCH` 覆盖），因此同一份数据 + 同一份代码反复打包得到逐字节相同的文件，
+`npm run build` 不会在 `git status` 里留下"只有时间戳不同"的假变更。
 
 ### 8.2 手工验证（建议按顺序走一遍，约 7 分钟）
 
@@ -428,7 +432,7 @@ npm run analyze:fault
 
 ## 10. 源码仓库
 
-零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 14 次提交，便于按需审阅某一层：
+零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 15 次提交，便于按需审阅某一层：
 
 | 提交 | 覆盖范围 |
 | --- | --- |
@@ -436,7 +440,7 @@ npm run analyze:fault
 | `feat: 核心算法层` | `src/`（时点闸门、数据质量、市场取数、归因、偏差、合规） |
 | `feat: 确定性构造数据集与生成脚本` | `data/`（构造部分）、`scripts/gen-fixtures.js` |
 | `feat: Web 产品` | `server.js`、`public/` |
-| `test: 38 个用例与 14 项前端渲染冒烟` | `test/`、`scripts/smoke-ui.js`（该提交时点为 38 个，后续扩到 70） |
+| `test: 38 个用例与 14 项前端渲染冒烟` | `test/`、`scripts/smoke-ui.js`（该提交时点为 38 个，后续扩到 71） |
 | `build: CLI 复盘导出与单文件离线打包` | `scripts/analyze.js`、`scripts/build-standalone.js`、`dist/` |
 | `docs: README 与验证记录` | `README.md`、`docs/` |
 | `fix: 修正「时点闸门实验」提示文案方向写反` | `public/index.html`、`dist/standalone.html` |
@@ -444,8 +448,9 @@ npm run analyze:fault
 | `test: 补时点闸门单调性断言，并修正方向表述` | `test/`、`docs/`、`README.md` |
 | `feat: 扶摇真实数据源接入` | `src/adapters/`、`scripts/fetch-fuyao.js`、`data/real/`、`src/dataset.js`、`server.js`、`public/` |
 | `fix: 归因证据引用去重、术语词典补全与披露日降级留证` | `src/attribution.js`、`src/reasoning.js`、`src/report.js` |
-| `test: 新增扶摇适配层用例并补回归断言` | `test/fuyao.test.js`、`test/pipeline.test.js`（累计 70 个） |
+| `test: 新增扶摇适配层用例并补回归断言` | `test/fuyao.test.js`、`test/pipeline.test.js`（累计 71 个） |
 | `docs: 真实数据接入说明、样例与文档更新` | `docs/DATA_SOURCE.md`、`docs/AI_USAGE.md`、`docs/TESTING.md`、`docs/samples/`、`README.md` |
+| `build: 打包与数据生成改为可复现（生成时刻不再取当前时间）` | `scripts/gen-fixtures.js`、`scripts/analyze.js`、`scripts/build-standalone.js`、`src/report.js`、`src/quality.js`、`test/pipeline.test.js`、`data/meta.json`、`dist/standalone.html` |
 
 **仓库不含任何密钥、账户信息或真实持仓**：`.env` / `*.key` 由 `.gitignore` 排除（`.env` 内有本地
 `FUYAO_API_KEY`，已确认未入库）。数据集分两类，`meta.source` 自证来源：

@@ -42,7 +42,7 @@ function resolveLimit(series, staleness, fallback) {
  * @param {object} opts.staleness  按序列前缀覆盖的过期阈值
  */
 export function checkQuality(evidence, opts = {}) {
-  const { asOfCutoff, staleDays = 7, staleness = {} } = opts;
+  const { asOfCutoff, staleDays = 7, staleness = {}, checkedAt } = opts;
   const cutoff = parseTime(asOfCutoff);
   const issues = [];
 
@@ -165,7 +165,7 @@ export function checkQuality(evidence, opts = {}) {
         : status === 'blocked'
           ? '⛔ 无可用事前证据，本次复盘已阻断：不产出归因结论。'
           : `⚠️ 数据降级（错误 ${errorCount} 项 / 提示 ${warnCount} 项）：下列结论仅基于通过校验的证据，缺失与冲突项已显式标注。`,
-    checkedAt: new Date().toISOString(),
+    checkedAt: checkedAt ?? new Date().toISOString(),
     asOfCutoff: asOfCutoff ?? null,
     cutoffLabel: formatDate(asOfCutoff),
   };

@@ -7,7 +7,8 @@
  *   node scripts/analyze.js D-2024-0311-A --as-of 2024-03-15T09:00:00+08:00
  *                                               # 把决策时点往后挪，直观看到"时点闸门"的后果
  *   node scripts/analyze.js --source real        # 用扶摇真实数据快照跑（需先 npm run fetch:fuyao）
- *   node scripts/analyze.js --source real --out docs/samples/real
+ *   node scripts/analyze.js --source real --out docs/samples/real --now 2024-11-11T11:11:11Z
+ *                                               # --now 固定报告里的"生成时刻"，让归档样例可复现
  *   node scripts/analyze.js --fault              # 注入故障：数据文件缺失，验证降级路径
  */
 
@@ -21,7 +22,7 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'out');
 
 function parseArgs(argv) {
-  const args = { id: null, asOf: null, fault: false, json: false, source: null, outDir: null };
+  const args = { id: null, asOf: null, fault: false, json: false, source: null, outDir: null, now: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--as-of') args.asOf = argv[++i];
@@ -29,9 +30,27 @@ function parseArgs(argv) {
     else if (a === '--json') args.json = true;
     else if (a === '--source') args.source = argv[++i];
     else if (a === '--out') args.outDir = argv[++i];
+    else if (a === '--now') args.now = argv[++i];
     else if (!a.startsWith('--')) args.id = a;
   }
   return args;
+}
+
+/**
+ * 报告里"生成时刻"的取值。
+ * 默认取当前时间（CLI 交互使用时这才是事实）；
+ * 但归档样例需要可复现，因此支持 `--now <ISO>` 与标准环境变量 `SOURCE_DATE_EPOCH`。
+ */
+function resolveNow(args) {
+  if (args.now) {
+    const t = Date.parse(args.now);
+    if (Number.isFinite(t)) return new Date(t).toISOString();
+  }
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  if (epoch && Number.isFinite(Number(epoch))) {
+    return new Date(Number(epoch) * 1000).toISOString();
+  }
+  return undefined; // 交给 buildReport 取当前时间
 }
 
 function md(report) {
@@ -130,7 +149,7 @@ function main() {
   }
 
   for (const t of targets) {
-    const report = buildReport(dataset, t.id, { asOfOverride: args.asOf });
+    const report = buildReport(dataset, t.id, { asOfOverride: args.asOf, generatedAt: resolveNow(args) });
     fs.writeFileSync(path.join(outDir, `${t.id}.json`), JSON.stringify(report, null, 2), 'utf8');
     fs.writeFileSync(path.join(outDir, `${t.id}.md`), md(report), 'utf8');
     if (!args.json) {
