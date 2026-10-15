@@ -1,0 +1,82 @@
+{
+  "note": "构造的事件/资讯数据，仅用于演示「事前消息 vs 事后消息」的分区。publishedAt 是信息披露时点，必须用它做时点判断。",
+  "events": [
+    {
+      "id": "E-D1-A",
+      "publishedAt": "2024-03-05T08:30:00+08:00",
+      "title": "标的A发布 2023 年度业绩预增公告",
+      "category": "公司公告",
+      "impact": "high",
+      "source": "交易所公告（构造）",
+      "summary": "预计年度净利润同比增长区间中值高于市场一致预期。",
+      "relatedSymbols": ["600519.SH"]
+    },
+    {
+      "id": "E-D1-B",
+      "publishedAt": "2024-03-15T09:10:00+08:00",
+      "title": "行业月度动销数据低于市场预期",
+      "category": "行业数据",
+      "impact": "high",
+      "source": "行业数据库（构造）",
+      "summary": "渠道端动销环比走弱，批价小幅回落。该数据在 3 月 11 日决策时尚未发布。",
+      "relatedSymbols": ["600519.SH"]
+    },
+    {
+      "id": "E-D1-C",
+      "publishedAt": "2024-04-10T16:00:00+08:00",
+      "title": "板块整体回调，北向资金连续净流出",
+      "category": "资金面",
+      "impact": "medium",
+      "source": "交易所统计（构造）",
+      "relatedSymbols": ["600519.SH", "000300.SH"]
+    },
+    {
+      "id": "E-D2-A",
+      "publishedAt": "2024-01-05T09:00:00+08:00",
+      "title": "银行板块估值处于近十年低位，股息率吸引力提升",
+      "category": "策略研究",
+      "impact": "medium",
+      "source": "券商研报（构造）",
+      "summary": "多篇研报提到板块 PB 与股息率处于历史极端位置。",
+      "relatedSymbols": ["000001.SZ"]
+    },
+    {
+      "id": "E-D2-B",
+      "publishedAt": "2024-03-20T19:00:00+08:00",
+      "title": "标的B披露 2023 年年报，不良率小幅上行",
+      "category": "公司公告",
+      "impact": "medium",
+      "source": "交易所公告（构造）",
+      "summary": "年报显示不良率较三季度末上升 2BP，仍在事前设定的『连续两季显著上升』阈值之外。",
+      "relatedSymbols": ["000001.SZ"]
+    },
+    {
+      "id": "E-D3-A",
+      "publishedAt": "2024-05-18T10:00:00+08:00",
+      "title": "5 月新能源车零售数据环比改善",
+      "category": "行业数据",
+      "impact": "medium",
+      "source": "行业协会（构造）",
+      "relatedSymbols": ["300750.SZ"]
+    },
+    {
+      "id": "E-D3-B",
+      "publishedAt": "2024-07-15T09:00:00+08:00",
+      "title": "储能招标量超市场预期",
+      "category": "行业数据",
+      "impact": "high",
+      "source": "行业数据库（构造）",
+      "summary": "决策后出现的高影响行业信息，用于演示后见之明隔离。",
+      "relatedSymbols": ["300750.SZ"]
+    },
+    {
+      "id": "E-X-UNDATED",
+      "publishedAt": null,
+      "title": "个人随手记录：朋友说这个板块有资金在进",
+      "category": "非正式信息",
+      "impact": null,
+      "source": "个人笔记（构造）",
+      "summary": "刻意留下一条没有时间戳的信息，用于验证系统不会把它默认当成『事前可知』。"
+    }
+  ]
+}

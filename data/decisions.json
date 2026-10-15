@@ -1,0 +1,89 @@
+{
+  "note": "匿名 / 构造的决策记录，仅用于产品演示与自动化测试。不含任何真实用户的隐私、账户或持仓信息；标的名称为代号。",
+  "anonymization": {
+    "policy": "真实身份信息一律不落库；标的以代号表示，用量与金额可等比缩放，不影响归因口径。",
+    "doNotCommit": ["账户号", "券商流水原文", "身份证/手机号", "真实持仓截图"]
+  },
+  "decisions": [
+    {
+      "id": "D-2024-0311-A",
+      "symbol": "600519.SH",
+      "name": "标的A（消费/白酒）",
+      "action": "buy",
+      "decidedAt": "2024-03-11T14:20:00+08:00",
+      "executedAt": "2024-03-11T14:35:00+08:00",
+      "price": 1680.0,
+      "quantity": 100,
+      "horizon": "3-6M",
+      "reasoning": "看到公司发了业绩预增公告，感觉基本面在改善；估值分位已经在低位了，加上最近涨幅不错趋势走出来了，想拿几个月看看。",
+      "preCommit": {
+        "targetReturnPct": 20,
+        "stopLossPct": -10,
+        "invalidation": ""
+      },
+      "tags": ["消费", "业绩驱动"],
+      "anonymized": true
+    },
+    {
+      "id": "D-2024-0108-B",
+      "symbol": "000001.SZ",
+      "name": "标的B（银行）",
+      "action": "buy",
+      "decidedAt": "2024-01-08T10:05:00+08:00",
+      "executedAt": "2024-01-08T10:12:00+08:00",
+      "price": 9.42,
+      "quantity": 2000,
+      "horizon": "6-12M",
+      "reasoning": "银行股估值处于历史极低分位，市净率只有 0.44 倍，股息率超过 7%，向下空间有限，适合作为底仓吃股息，计划持有半年以上。",
+      "preCommit": {
+        "targetReturnPct": 15,
+        "stopLossPct": -8,
+        "invalidation": "公司不良率连续两个季度显著上升"
+      },
+      "tags": ["高股息", "低估值"],
+      "anonymized": true
+    },
+    {
+      "id": "D-2024-0520-C",
+      "symbol": "300750.SZ",
+      "name": "标的C（锂电池）",
+      "action": "buy",
+      "decidedAt": "2024-05-20T13:45:00+08:00",
+      "executedAt": "2024-05-20T13:52:00+08:00",
+      "price": 198.0,
+      "quantity": 300,
+      "horizon": "3M",
+      "reasoning": "听说新能源车销量不错，行业应该回暖了，股价横盘一阵子也站稳了，估值不高，先买一点放着看看。",
+      "preCommit": {
+        "targetReturnPct": 25,
+        "stopLossPct": -12,
+        "invalidation": "季度毛利率连续两个季度下滑"
+      },
+      "tags": ["新能源", "行业景气"],
+      "anonymized": true
+    }
+  ],
+  "exits": [
+    {
+      "decisionId": "D-2024-0311-A",
+      "exitedAt": "2024-04-22T10:05:00+08:00",
+      "exitPrice": 1612.0,
+      "exitReason": "股价连续回调，担心继续下跌，先离场。",
+      "feeIncludedInReturn": false
+    },
+    {
+      "decisionId": "D-2024-0108-B",
+      "exitedAt": "2024-06-28T14:40:00+08:00",
+      "exitPrice": 8.35,
+      "exitReason": "触及事前设定的止损线，按计划离场，不追加。",
+      "feeIncludedInReturn": false
+    },
+    {
+      "decisionId": "D-2024-0520-C",
+      "exitedAt": "2024-09-12T11:20:00+08:00",
+      "exitPrice": 205.5,
+      "exitReason": "好不容易回到成本价上方，先卖出落袋为安。",
+      "feeIncludedInReturn": false
+    }
+  ]
+}
