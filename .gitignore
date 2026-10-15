@@ -1,0 +1,23 @@
+# 依赖（本项目运行时零依赖，此目录不应出现）
+node_modules/
+
+# 复盘导出产物
+out/
+
+# 打包中间产物（dist/standalone.html 是交付物，保留；assets/ 可随时由 npm run build 重建）
+dist/assets/
+
+# 环境变量与密钥：绝不提交
+.env
+.env.local
+*.key
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+npm-debug.log*

@@ -1,0 +1,23 @@
+{
+  "name": "decision-replay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "投资决策复盘与学习 —— 时点对齐 · 事后信息隔离 · 结构化归因 · 学习沉淀（零运行时依赖）",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "gen": "node scripts/gen-fixtures.js",
+    "analyze": "node scripts/analyze.js",
+    "analyze:fault": "node scripts/analyze.js --fault",
+    "test": "node --test",
+    "test:verbose": "node --test --test-reporter=spec",
+    "smoke": "node scripts/smoke-ui.js",
+    "build": "node scripts/build-standalone.js",
+    "verify": "node --test && node scripts/smoke-ui.js && node scripts/build-standalone.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
