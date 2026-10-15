@@ -24,3 +24,8 @@ npm-debug.log*
 
 # 拉取缓存与临时文件
 .tmp/
+
+# 视频文件不入库（88MB，走 GitHub Release 附件交付）
+*.mp4
+*.mov
+*.webm
