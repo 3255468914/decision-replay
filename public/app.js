@@ -14,6 +14,8 @@ const state = {
   meta: null,
   asOfOffsetDays: 0,
   fault: '',
+  // 数据源：'' 表示用服务端默认（fixture）。切换时全量重载，因为决策记录与证据都变了。
+  source: '',
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -389,6 +391,7 @@ async function loadReport() {
   const asOf = computeAsOf();
   if (asOf) qs.set('asOf', asOf);
   if (state.fault) qs.set('fault', state.fault);
+  if (state.source) qs.set('source', state.source);
 
   try {
     const body = await fetchJson(`/api/report/${encodeURIComponent(state.current)}${qs.toString() ? '?' + qs : ''}`);
@@ -463,24 +466,46 @@ async function boot() {
     $('#healthDot').className = 'pill pill-error';
   }
 
+  // 数据源下拉：只列出实际可用的源，避免选了却打不开
   try {
-    const meta = await fetchJson('/api/meta');
-    state.meta = meta.meta;
-    $('#dataSource').textContent = `数据源：${meta.meta.source} · ${meta.counts.marketPoints} 个数据点`;
-    $('#dataSource').className = 'pill pill-warn';
-  } catch (err) {
-    $('#dataSource').textContent = `数据集不可用：${err.code ?? 'ERROR'}`;
-    $('#dataSource').className = 'pill pill-error';
+    const s = await fetchJson('/api/sources');
+    const sel = $('#sourceSelect');
+    sel.innerHTML = '';
+    for (const item of s.sources) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.available
+        ? `${item.label} · ${item.pointCount ?? '?'} 个数据点`
+        : `${item.label}（不可用）`;
+      opt.disabled = !item.available;
+      sel.appendChild(opt);
+    }
+    sel.value = s.default;
+  } catch {
+    /* 拿不到就保留静态选项 */
   }
 
+  await loadMeta();
+
   try {
-    const body = await fetchJson('/api/decisions');
+    const body = await fetchJson(`/api/decisions${state.source ? '?source=' + state.source : ''}`);
     state.decisions = body.decisions;
     renderDecisionList();
     if (state.decisions.length) await selectDecision(state.decisions[0].id);
   } catch (err) {
     $('#alertZone').innerHTML = `<div class="alert alert-error"><strong>无法加载决策列表：${esc(err.code ?? 'ERROR')}</strong><br>${esc(err.message ?? '')}</div>`;
   }
+
+  $('#sourceSelect').addEventListener('change', async (e) => {
+    state.source = e.target.value;
+    state.report = null;
+    $('#reportRoot').innerHTML = '<p class="spinner">正在切换数据源并重新载入…</p>';
+    await loadMeta();
+    const body = await fetchJson(`/api/decisions?source=${state.source}`);
+    state.decisions = body.decisions;
+    renderDecisionList();
+    if (state.decisions.length) await selectDecision(state.decisions[0].id);
+  });
 
   $('#asOfPreset').addEventListener('change', (e) => {
     state.asOfOffsetDays = Number(e.target.value);
@@ -498,6 +523,30 @@ async function boot() {
     if (!state.report) return;
     download(`${state.report.decision.id}-review.md`, reportToMarkdown(state.report), 'text/markdown');
   });
+}
+
+/** 数据源徽标：把"上游有几处不可信"直接摆在顶栏，不让它藏在详情里 */
+async function loadMeta() {
+  try {
+    const meta = await fetchJson(`/api/meta${state.source ? '?source=' + state.source : ''}`);
+    state.meta = meta.meta;
+    const anomalies = meta.meta.upstreamAnomalies?.length ?? 0;
+    const gaps = meta.meta.unavailableCapabilities?.length ?? 0;
+    const parts = [`${meta.meta.source === 'fuyao' ? '真实数据（扶摇）' : '构造数据集'} · ${meta.counts.marketPoints} 个数据点`];
+    if (anomalies) parts.push(`上游异常 ${anomalies} 处`);
+    if (gaps) parts.push(`字段缺口 ${gaps} 项`);
+    $('#dataSource').textContent = parts.join(' · ');
+    $('#dataSource').className = anomalies || gaps ? 'pill pill-warn' : 'pill pill-neutral';
+    $('#dataSource').title = [
+      anomalies ? `上游披露日异常 ${anomalies} 处（已降级到法定截止日）` : '',
+      gaps ? `扶摇未提供的字段：${meta.meta.unavailableCapabilities.map((u) => u.series).join('、')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  } catch (err) {
+    $('#dataSource').textContent = `数据集不可用：${err.code ?? 'ERROR'}`;
+    $('#dataSource').className = 'pill pill-error';
+  }
 }
 
 boot();

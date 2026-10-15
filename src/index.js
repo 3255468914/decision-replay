@@ -1,7 +1,16 @@
 /**
  * index.js —— 库的统一出口（供 server / CLI / 测试复用）
  */
-export { loadDataset, validateDataset, listDecisions, REQUIRED_FILES } from './dataset.js';
+export {
+  loadDataset,
+  validateDataset,
+  listDecisions,
+  listDataSources,
+  resolveDataDir,
+  REQUIRED_FILES,
+  DATA_SOURCES,
+  DEFAULT_SOURCE,
+} from './dataset.js';
 export { buildReport, buildTimeline } from './report.js';
 export { splitByDecisionTime, PIT_BUCKET, inHoldingWindow } from './pit.js';
 export { checkQuality, SEVERITY, QUALITY_CODE, isUsable, filterUsablePoints } from './quality.js';

@@ -21,3 +21,6 @@ Thumbs.db
 # 日志
 *.log
 npm-debug.log*
+
+# 拉取缓存与临时文件
+.tmp/

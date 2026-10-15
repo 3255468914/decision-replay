@@ -30,13 +30,22 @@
     <h2>历史决策</h2>
     <ul id="decisionList" class="decision-list"></ul>
     <div class="sidebar-note">
-      <p><strong>为什么只有 3 条记录？</strong></p>
-      <p>全部为匿名 / 构造数据（题目允许），标的以代号表示。真实使用时这些字段来自券商流水与个人笔记。绝不提交账户号、流水原文等隐私字段。</p>
+      <p><strong>关于数据</strong></p>
+      <p>决策记录（买入理由、离场理由）为<strong>匿名演示样本</strong>，标的以代号表示，非真实投资者行为。可切换两种数据源：<strong>构造数据集</strong>（确定性、用于回归测试）与<strong>真实数据</strong>（扶摇行情与财报，入场价取真实未复权收盘价，离场时点按离场理由的行为含义从真实价格推导）。</p>
+      <p>真实使用时这些字段来自券商流水与个人笔记。绝不提交账户号、流水原文等隐私字段。</p>
     </div>
   </aside>
 
   <section class="content">
     <div class="control-panel">
+      <div class="control-group">
+        <label for="sourceSelect">数据源</label>
+        <select id="sourceSelect">
+          <option value="fixture">构造数据集（确定性、可复现）</option>
+          <option value="real">真实数据（扶摇 · 同花顺金融数据API）</option>
+        </select>
+        <p class="hint">两套数据跑的是<strong>同一套算法</strong>，结论差异只来自数据本身。真实数据快照由 <code>scripts/fetch-fuyao.js</code> 拉取后落盘，<strong>快照里不含任何密钥</strong>。注意：扶摇并不提供全部字段——PE/PB 由价格与财报推导，股息率、不良率、宏观 PMI 不可得，这些缺口的处理方式本身就是产品要展示的能力。</p>
+      </div>
       <div class="control-group">
         <label for="asOfPreset">决策时点闸门实验</label>
         <select id="asOfPreset">

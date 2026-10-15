@@ -1,0 +1,125 @@
+{
+  "note": "决策文本沿用演示样本（匿名代号）；入场价与离场价已替换为扶摇真实收盘价，保证与真实行情口径自洽。",
+  "decisions": [
+    {
+      "id": "D-2024-0311-A",
+      "symbol": "600519.SH",
+      "name": "标的A（消费/白酒）",
+      "action": "buy",
+      "decidedAt": "2024-03-11T14:20:00+08:00",
+      "executedAt": "2024-03-11T14:35:00+08:00",
+      "price": 1694.49,
+      "quantity": 100,
+      "horizon": "3-6M",
+      "reasoning": "看到公司发了业绩预增公告，感觉基本面在改善；估值分位已经在低位了，加上最近涨幅不错趋势走出来了，想拿几个月看看。",
+      "preCommit": {
+        "targetReturnPct": 20,
+        "stopLossPct": -10,
+        "invalidation": ""
+      },
+      "tags": [
+        "消费",
+        "业绩驱动"
+      ],
+      "anonymized": true,
+      "priceSource": "扶摇真实未复权收盘价（2024-03-11）"
+    },
+    {
+      "id": "D-2024-0108-B",
+      "symbol": "000001.SZ",
+      "name": "标的B（银行）",
+      "action": "buy",
+      "decidedAt": "2024-01-08T10:05:00+08:00",
+      "executedAt": "2024-01-08T10:12:00+08:00",
+      "price": 9.15,
+      "quantity": 2000,
+      "horizon": "6-12M",
+      "reasoning": "银行股估值处于历史极低分位，市净率只有 0.44 倍，股息率超过 7%，向下空间有限，适合作为底仓吃股息，计划持有半年以上。",
+      "preCommit": {
+        "targetReturnPct": 15,
+        "stopLossPct": -8,
+        "invalidation": "公司不良率连续两个季度显著上升"
+      },
+      "tags": [
+        "高股息",
+        "低估值"
+      ],
+      "anonymized": true,
+      "priceSource": "扶摇真实未复权收盘价（2024-01-08）"
+    },
+    {
+      "id": "D-2024-0520-C",
+      "symbol": "300750.SZ",
+      "name": "标的C（锂电池）",
+      "action": "buy",
+      "decidedAt": "2024-05-20T13:45:00+08:00",
+      "executedAt": "2024-05-20T13:52:00+08:00",
+      "price": 203.45,
+      "quantity": 300,
+      "horizon": "3M",
+      "reasoning": "听说新能源车销量不错，行业应该回暖了，股价横盘一阵子也站稳了，估值不高，先买一点放着看看。",
+      "preCommit": {
+        "targetReturnPct": 25,
+        "stopLossPct": -12,
+        "invalidation": "季度毛利率连续两个季度下滑"
+      },
+      "tags": [
+        "新能源",
+        "行业景气"
+      ],
+      "anonymized": true,
+      "priceSource": "扶摇真实未复权收盘价（2024-05-20）"
+    }
+  ],
+  "exits": [
+    {
+      "decisionId": "D-2024-0311-A",
+      "exitedAt": "2024-06-07T14:40:00+08:00",
+      "exitPrice": 1619.18,
+      "exitReason": "股价连续回调，担心继续下跌，先离场。",
+      "feeIncludedInReturn": false,
+      "priceSource": "扶摇真实未复权收盘价（2024-06-07）",
+      "derivation": {
+        "applied": true,
+        "rule": "first_drawdown",
+        "thresholdPct": -4,
+        "entryPx": 1694.49,
+        "returnPct": -4.44,
+        "note": "回撤首次达到 -4% 即离场。注意其事前设定的止损线是 -10%：**他在自己的规则之前就跑了**，这本身就是一处可归因的行为偏差。"
+      }
+    },
+    {
+      "decisionId": "D-2024-0108-B",
+      "exitedAt": "2024-02-21T14:40:00+08:00",
+      "exitPrice": 10.8,
+      "exitReason": "触及事前设定的止损线，按计划离场，不追加。",
+      "feeIncludedInReturn": false,
+      "priceSource": "扶摇真实未复权收盘价（2024-02-21）",
+      "derivation": {
+        "applied": true,
+        "rule": "target_return",
+        "thresholdPct": 15,
+        "entryPx": 9.15,
+        "returnPct": 18.03,
+        "note": "其 preCommit.targetReturnPct = 15%，取真实价格首次触及该目标之日。该标的的 -8% 止损线在真实行情中从未触发。"
+      }
+    },
+    {
+      "decisionId": "D-2024-0520-C",
+      "exitedAt": "2024-09-26T14:40:00+08:00",
+      "exitPrice": 205.51,
+      "exitReason": "好不容易回到成本价上方，先卖出落袋为安。",
+      "feeIncludedInReturn": false,
+      "priceSource": "扶摇真实未复权收盘价（2024-09-26）",
+      "derivation": {
+        "applied": true,
+        "rule": "recover_after_drawdown",
+        "drawdownPct": -10,
+        "entryPx": 203.45,
+        "returnPct": 1.01,
+        "troughPct": -16.93,
+        "note": "先要求区间回撤曾达到 -10%（\"好不容易\"才有依据），再取其后首次收盘价回到入场价之上之日。"
+      }
+    }
+  ]
+}

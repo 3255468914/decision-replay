@@ -14,8 +14,83 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const REQUIRED_FILES = ['decisions.json', 'market.json', 'events.json'];
 
-export function loadDataset(dataDir) {
-  const dir = dataDir ?? path.resolve(__dirname, '..', 'data');
+/**
+ * 可切换的数据源。
+ *   fixture —— 构造数据集（默认）：确定性、可复现，供自动化测试使用。
+ *   real    —— 扶摇真实数据快照：由 scripts/fetch-fuyao.js 拉取后落盘，**不含密钥**。
+ *
+ * 之所以默认仍是 fixture：测试需要逐字节可复现的输入，
+ * 真实数据会随上游修订而变化，不适合作为回归基线。
+ */
+export const DATA_SOURCES = {
+  fixture: {
+    dir: 'data',
+    label: '构造数据集',
+    metaSource: 'synthetic-fixture',
+    note: '确定性生成，用于演示与自动化测试。',
+  },
+  real: {
+    dir: 'data/real',
+    label: '真实数据（扶摇）',
+    metaSource: 'fuyao',
+    note: '从扶摇（同花顺金融数据API）拉取的真实行情与财报快照；决策文本为匿名样本，入场/离场价已替换为真实收盘价。',
+  },
+};
+
+export const DEFAULT_SOURCE = 'fixture';
+
+export function listDataSources() {
+  return Object.entries(DATA_SOURCES).map(([id, s]) => {
+    const abs = path.resolve(__dirname, '..', s.dir);
+    let available = false;
+    let pointCount = null;
+    try {
+      available = REQUIRED_FILES.every((f) => fs.existsSync(path.join(abs, f)));
+      if (available) {
+        pointCount = JSON.parse(fs.readFileSync(path.join(abs, 'market.json'), 'utf8')).pointCount ?? null;
+      }
+    } catch {
+      available = false;
+    }
+    return { id, label: s.label, note: s.note, available, pointCount, relDir: s.dir };
+  });
+}
+
+export function resolveDataDir(source = DEFAULT_SOURCE) {
+  const key = source ?? DEFAULT_SOURCE;
+  const spec = DATA_SOURCES[key];
+  if (!spec) {
+    const e = new Error(`未知数据源：${key}（可选：${Object.keys(DATA_SOURCES).join(' / ')}）`);
+    e.code = 'DATASET_INVALID';
+    e.statusCode = 400;
+    throw e;
+  }
+  return path.resolve(__dirname, '..', spec.dir);
+}
+
+/**
+ * 载入数据集。
+ * @param {string|{source?:string, dataDir?:string}} [arg]
+ *        省略 → fixture；字符串 → 视为目录（向后兼容）；对象 → 按 source 解析
+ */
+export function loadDataset(arg) {
+  let dir;
+  let sourceId = DEFAULT_SOURCE;
+  if (typeof arg === 'string') {
+    dir = arg;
+    sourceId = null;
+  } else if (arg && typeof arg === 'object') {
+    if (arg.dataDir) {
+      dir = arg.dataDir;
+      sourceId = null;
+    } else {
+      sourceId = arg.source ?? DEFAULT_SOURCE;
+      dir = resolveDataDir(sourceId);
+    }
+  } else {
+    dir = resolveDataDir(sourceId);
+  }
+
   const missing = [];
   const read = (name) => {
     const p = path.join(dir, name);
@@ -44,6 +119,8 @@ export function loadDataset(dataDir) {
   }
 
   const dataset = {
+    sourceId,
+    dataDir: dir,
     meta: metaFile ?? { source: 'synthetic-fixture', generatedAt: null, benchmarkSeries: null },
     decisions: decisionsFile.decisions ?? [],
     exits: decisionsFile.exits ?? [],

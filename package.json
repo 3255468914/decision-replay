@@ -10,6 +10,8 @@
   "scripts": {
     "start": "node server.js",
     "gen": "node scripts/gen-fixtures.js",
+    "fetch:fuyao": "node scripts/fetch-fuyao.js",
+    "fetch:fuyao:refresh": "node scripts/fetch-fuyao.js --refresh",
     "analyze": "node scripts/analyze.js",
     "analyze:fault": "node scripts/analyze.js --fault",
     "test": "node --test",

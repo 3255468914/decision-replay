@@ -2,11 +2,13 @@
  * scripts/analyze.js —— 命令行跑一遍完整复盘，输出到终端并落盘 JSON/Markdown
  *
  * 用法：
- *   node scripts/analyze.js                     # 跑全部决策，生成 out/ 下的报告
+ *   node scripts/analyze.js                     # 跑全部决策，生成 out/ 下的报告（默认构造数据集）
  *   node scripts/analyze.js D-2024-0311-A       # 只跑指定决策
  *   node scripts/analyze.js D-2024-0311-A --as-of 2024-03-15T09:00:00+08:00
  *                                               # 把决策时点往后挪，直观看到"时点闸门"的后果
- *   node scripts/analyze.js --fault             # 注入故障：数据文件缺失，验证降级路径
+ *   node scripts/analyze.js --source real        # 用扶摇真实数据快照跑（需先 npm run fetch:fuyao）
+ *   node scripts/analyze.js --source real --out docs/samples/real
+ *   node scripts/analyze.js --fault              # 注入故障：数据文件缺失，验证降级路径
  */
 
 import fs from 'node:fs';
@@ -19,12 +21,14 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'out');
 
 function parseArgs(argv) {
-  const args = { id: null, asOf: null, fault: false, json: false };
+  const args = { id: null, asOf: null, fault: false, json: false, source: null, outDir: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--as-of') args.asOf = argv[++i];
     else if (a === '--fault') args.fault = true;
     else if (a === '--json') args.json = true;
+    else if (a === '--source') args.source = argv[++i];
+    else if (a === '--out') args.outDir = argv[++i];
     else if (!a.startsWith('--')) args.id = a;
   }
   return args;
@@ -96,13 +100,16 @@ function md(report) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  fs.mkdirSync(OUT, { recursive: true });
-
-  const dataDir = args.fault ? path.join(OUT, '__missing_dir_for_fault_test__') : undefined;
+  const outDir = args.outDir ? path.resolve(args.outDir) : OUT;
+  fs.mkdirSync(outDir, { recursive: true });
 
   let dataset;
   try {
-    dataset = loadDataset(dataDir);
+    if (args.fault) {
+      dataset = loadDataset(path.join(outDir, '__missing_dir_for_fault_test__'));
+    } else {
+      dataset = loadDataset(args.source ? { source: args.source } : undefined);
+    }
   } catch (err) {
     console.error(`\n[数据加载失败] code=${err.code}`);
     console.error(`  ${err.message}`);
@@ -110,6 +117,9 @@ function main() {
     process.exitCode = 2;
     return;
   }
+
+  const label = dataset.meta?.source ?? dataset.sourceId ?? 'unknown';
+  if (args.source) console.log(`数据源：${dataset.sourceId}（meta.source=${label}，${dataset.market.length} 个数据点）`);
 
   const summaries = listDecisions(dataset);
   const targets = args.id ? summaries.filter((s) => s.id === args.id) : summaries;
@@ -121,13 +131,13 @@ function main() {
 
   for (const t of targets) {
     const report = buildReport(dataset, t.id, { asOfOverride: args.asOf });
-    fs.writeFileSync(path.join(OUT, `${t.id}.json`), JSON.stringify(report, null, 2), 'utf8');
-    fs.writeFileSync(path.join(OUT, `${t.id}.md`), md(report), 'utf8');
+    fs.writeFileSync(path.join(outDir, `${t.id}.json`), JSON.stringify(report, null, 2), 'utf8');
+    fs.writeFileSync(path.join(outDir, `${t.id}.md`), md(report), 'utf8');
     if (!args.json) {
       console.log(`\n${'='.repeat(72)}`);
       console.log(md(report));
     }
-    console.log(`\n✓ 已输出 out/${t.id}.json 与 out/${t.id}.md`);
+    console.log(`\n✓ 已输出 ${path.relative(process.cwd(), outDir)}\\${t.id}.json 与 .md`);
   }
 }
 

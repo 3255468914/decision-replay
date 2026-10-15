@@ -19,7 +19,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadDataset, listDecisions, buildReport } from './src/index.js';
+import { loadDataset, listDecisions, buildReport, listDataSources } from './src/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -108,16 +108,27 @@ export function requestHandler(req, res) {
       const fault = url.searchParams.get('fault');
       if (fault) applyFault(fault);
 
+      if (pathname === '/api/sources') {
+        return sendJson(res, 200, { ok: true, default: 'fixture', sources: listDataSources() });
+      }
+
+      // 数据源：?source=real 走扶摇真实数据快照，默认 fixture。
+      // 两者用同一套算法，结论差异只来自数据本身 —— 这正是要展示的。
+      const source = url.searchParams.get('source') ?? process.env.DATA_SOURCE ?? 'fixture';
+
       let dataset;
       try {
-        dataset = loadDataset();
+        dataset = loadDataset({ source });
       } catch (err) {
-        return sendError(res, 503, err.code ?? 'DATASET_ERROR', err.message, { remediation: err.remediation ?? null });
+        return sendError(res, err.statusCode ?? 503, err.code ?? 'DATASET_ERROR', err.message, {
+          remediation: err.remediation ?? null,
+        });
       }
 
       if (pathname === '/api/meta') {
         return sendJson(res, 200, {
           ok: true,
+          sourceId: dataset.sourceId,
           meta: dataset.meta,
           counts: {
             decisions: dataset.decisions.length,
@@ -126,11 +137,17 @@ export function requestHandler(req, res) {
             events: dataset.events.length,
           },
           series: [...new Set(dataset.market.map((p) => p.series))].sort(),
+          sources: listDataSources(),
         });
       }
 
       if (pathname === '/api/decisions') {
-        return sendJson(res, 200, { ok: true, decisions: listDecisions(dataset), meta: dataset.meta });
+        return sendJson(res, 200, {
+          ok: true,
+          sourceId: dataset.sourceId,
+          decisions: listDecisions(dataset),
+          meta: dataset.meta,
+        });
       }
 
       const reportMatch = pathname.match(/^\/api\/report\/([^/]+)$/);
@@ -139,7 +156,7 @@ export function requestHandler(req, res) {
         const asOf = url.searchParams.get('asOf');
         try {
           const report = buildReport(dataset, id, { asOfOverride: asOf || undefined });
-          return sendJson(res, 200, { ok: true, report });
+          return sendJson(res, 200, { ok: true, sourceId: dataset.sourceId, report });
         } catch (err) {
           if (err.code === 'DECISION_NOT_FOUND') {
             return sendError(res, 404, err.code, err.message, { available: err.available });
