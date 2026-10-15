@@ -435,7 +435,8 @@ npm run analyze:fault
 
 ## 10. 源码仓库
 
-零依赖，克隆后无需 `npm install` 即可运行。历史按职责分成 18 次提交，便于按需审阅某一层：
+零依赖，克隆后无需 `npm install` 即可运行。历史按职责分层，便于按需审阅某一层
+（完整历史见 `git log --oneline`；下表列出的是主要分层）：
 
 | 提交 | 覆盖范围 |
 | --- | --- |
@@ -459,6 +460,8 @@ npm run analyze:fault
 | `docs: 新增 GitHub 推送指南，修正过期注释与 README 重复小节` | `docs/PUBLISH.md`、`.env.example`、`.gitattributes`、`README.md` |
 
 > **公开仓库地址**：`<待填>` —— 推送步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md)（含推送前的密钥自检与作者信息处理）。
+>
+> 除上表所列，另有若干条纯文档修订提交（数字校对、措辞修正等）未单列。
 
 **仓库不含任何密钥、账户信息或真实持仓**：`.env` / `*.key` 由 `.gitignore` 排除（`.env` 内有本地
 `FUYAO_API_KEY`，已确认未入库）。数据集分两类，`meta.source` 自证来源：

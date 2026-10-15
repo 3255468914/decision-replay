@@ -1,6 +1,7 @@
 # 推送到 GitHub —— 操作指南
 
-> 适用状态：仓库已在本地完成（**18 次提交、52 个跟踪文件、工作区干净**），但**还没有任何 remote**。
+> 适用状态：仓库已在本地完成（所有改动均已提交、52 个跟踪文件、工作区干净），但**还没有任何 remote**。
+> 提交条数用 `git rev-list --count HEAD` 查即可 —— 本文一律不写死这个数字，因为任何一次提交都会让它过时。
 > 本文按"照着做就能推上去"来写，每一步都给了验证方式。全程约 10 分钟。
 
 ---
@@ -63,7 +64,7 @@ git push -u origin main
 
 **这是本文唯一一件"做完就不好改"的事。**
 
-当前 18 次提交的作者全部是仓库级配置里的占位身份：
+当前**全部**提交的作者都是仓库级配置里的占位身份：
 
 ```
 Candidate <candidate@example.com>
@@ -77,7 +78,7 @@ Candidate <candidate@example.com>
 
 ### 情况 B：改成你自己的身份（推荐）
 
-因为还没有 remote、也没有协作者，直接在本地重写这 18 个提交最省事：
+因为还没有 remote、也没有协作者，直接在本地重写全部提交最省事：
 
 ```bash
 cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
@@ -99,7 +100,7 @@ git log --format="%h  %an <%ae>" | sort -u
 ```
 
 > `git filter-branch` 会打印一段"该命令已被弃用"的提示，**可以忽略**——它推荐替代品 `git filter-repo` 需要额外安装，
-> 18 个提交用 `filter-branch` 是秒级完成，没必要多装一个工具。
+> 十几二十个提交的规模，`filter-branch` 是秒级完成，没必要多装一个工具。
 
 **关于填哪个邮箱**——如果你不希望真实邮箱出现在公开仓库里，GitHub 提供了一个专用邮箱：
 
@@ -197,7 +198,7 @@ branch 'main' set up to track 'origin/main'.
 | # | 检查项 | 预期 |
 | --- | --- | --- |
 | 1 | 首页是否渲染出 README | 标题「投资决策复盘与学习 · Decision Replay」，顶部有在线体验链接，中文排版正常 |
-| 2 | 提交数 | 点 `commits` → **18 次提交**（若第 2 节改了作者，作者名应是你的） |
+| 2 | 提交数 | 点 `commits` → 条数应与本地 `git rev-list --count HEAD` 的输出**完全一致**（若第 2 节改了作者，作者名应是你的） |
 | 3 | **`.env` 不存在** | 根目录文件列表里**没有** `.env`，只有 `.env.example` |
 | 4 | `data/real/` 在、且不含密钥 | 点进 `data/real/` → 有 4 个 json；随便点开一个 `Ctrl+F` 搜 `sk-` → **搜不到** |
 | 5 | 语言统计 | 右侧显示 JavaScript 为主，`dist/standalone.html` 不应被算进去（`.gitattributes` 标了 `linguist-generated`） |
@@ -312,6 +313,6 @@ git remote -v
 git push -u origin main
 
 # ── 推送后核对 ────────────────────────────────────────────────
-git log --oneline | wc -l                           # 应为 18
+git rev-list --count HEAD                           # 记下这个数，与 GitHub 上的提交条数对照
 git ls-remote --heads origin                        # 应能看到 refs/heads/main
 ```
