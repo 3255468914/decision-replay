@@ -1,6 +1,6 @@
 # 推送到 GitHub —— 操作指南
 
-> 适用状态：仓库已在本地完成（**17 次提交、51 个跟踪文件、工作区干净**），但**还没有任何 remote**。
+> 适用状态：仓库已在本地完成（**18 次提交、52 个跟踪文件、工作区干净**），但**还没有任何 remote**。
 > 本文按"照着做就能推上去"来写，每一步都给了验证方式。全程约 10 分钟。
 
 ---
@@ -27,17 +27,17 @@ git push -u origin main
 
 ## 1. 会推上去什么（以及不会推什么）
 
-**会推送 —— 51 个文件，`.git` 仅 2.2 MB，最大单文件 3.9 MB**：
+**会推送 —— 52 个文件，`.git` 仅 2.2 MB，最大单文件 3.9 MB**：
 
 | 路径 | 内容 | 大小 |
 | --- | --- | --- |
-| `src/`（含 `src/adapters/`） | 全部算法层与扶摇适配层，13 个文件 | 148 KB |
+| `src/`（含 `src/adapters/`） | 全部算法层与扶摇适配层，13 个文件 | 128 KB |
 | `test/` | 5 个测试文件，71 个用例 | 48 KB |
 | `scripts/` | 数据生成、拉取、CLI、冒烟、打包 | 68 KB |
 | `public/` | 前端（无构建步骤的原生 ES Module） | 44 KB |
 | `data/` | 构造数据集快照（1,979 点） | 436 KB |
 | `data/real/` | **扶摇真实数据快照（2,749 点 / 24 序列），不含密钥** | 1.4 MB |
-| `docs/` | 5 份文档 + 两套样例报告（各 3 份 Markdown） | 132 KB |
+| `docs/` | 6 份文档 + 两套样例报告（各 3 份 Markdown） | 148 KB |
 | `dist/standalone.html` | 免安装单文件版（内联两个数据源、各 15 份预计算报告） | 3.9 MB |
 | 根目录 | `README.md`、`server.js`、`package.json`、`.gitignore`、`.gitattributes`、`.env.example` | 44 KB |
 
@@ -63,7 +63,7 @@ git push -u origin main
 
 **这是本文唯一一件"做完就不好改"的事。**
 
-当前 17 次提交的作者全部是仓库级配置里的占位身份：
+当前 18 次提交的作者全部是仓库级配置里的占位身份：
 
 ```
 Candidate <candidate@example.com>
@@ -77,7 +77,7 @@ Candidate <candidate@example.com>
 
 ### 情况 B：改成你自己的身份（推荐）
 
-因为还没有 remote、也没有协作者，直接在本地重写这 17 个提交最省事：
+因为还没有 remote、也没有协作者，直接在本地重写这 18 个提交最省事：
 
 ```bash
 cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
@@ -99,7 +99,7 @@ git log --format="%h  %an <%ae>" | sort -u
 ```
 
 > `git filter-branch` 会打印一段"该命令已被弃用"的提示，**可以忽略**——它推荐替代品 `git filter-repo` 需要额外安装，
-> 17 个提交用 `filter-branch` 是秒级完成，没必要多装一个工具。
+> 18 个提交用 `filter-branch` 是秒级完成，没必要多装一个工具。
 
 **关于填哪个邮箱**——如果你不希望真实邮箱出现在公开仓库里，GitHub 提供了一个专用邮箱：
 
@@ -185,6 +185,9 @@ branch 'main' set up to track 'origin/main'.
 
 看到 `* [new branch] main -> main` 就是成功了。
 
+> 上面那段输出里的 object 数量（`78`、`1.86 MiB`）是**示意**，实际会随提交内容变化，不必对号入座；
+> 真正要看的是最后两行：`* [new branch] main -> main` 与 `branch 'main' set up to track 'origin/main'`。
+
 ---
 
 ## 5. 第三步：推送后核对（6 项）
@@ -194,7 +197,7 @@ branch 'main' set up to track 'origin/main'.
 | # | 检查项 | 预期 |
 | --- | --- | --- |
 | 1 | 首页是否渲染出 README | 标题「投资决策复盘与学习 · Decision Replay」，顶部有在线体验链接，中文排版正常 |
-| 2 | 提交数 | 点 `commits` → **17 次提交**（若第 2 节改了作者，作者名应是你的） |
+| 2 | 提交数 | 点 `commits` → **18 次提交**（若第 2 节改了作者，作者名应是你的） |
 | 3 | **`.env` 不存在** | 根目录文件列表里**没有** `.env`，只有 `.env.example` |
 | 4 | `data/real/` 在、且不含密钥 | 点进 `data/real/` → 有 4 个 json；随便点开一个 `Ctrl+F` 搜 `sk-` → **搜不到** |
 | 5 | 语言统计 | 右侧显示 JavaScript 为主，`dist/standalone.html` 不应被算进去（`.gitattributes` 标了 `linguist-generated`） |
@@ -300,7 +303,7 @@ git log --format="%h  %an <%ae>" | sort -u
 # ── 推送前自检 ────────────────────────────────────────────────
 git status --short                                  # 应为空
 git grep -I -n -E "sk-[A-Za-z0-9_-]{12,}" || echo "干净：没有密钥形态的串"
-git ls-files | wc -l                                # 应为 51
+git ls-files | wc -l                                # 应为 52
 du -sh .git                                         # 应为 2.2M 左右
 
 # ── 关联并推送 ────────────────────────────────────────────────
@@ -309,6 +312,6 @@ git remote -v
 git push -u origin main
 
 # ── 推送后核对 ────────────────────────────────────────────────
-git log --oneline | wc -l                           # 应为 17
+git log --oneline | wc -l                           # 应为 18
 git ls-remote --heads origin                        # 应能看到 refs/heads/main
 ```
