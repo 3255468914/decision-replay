@@ -174,20 +174,30 @@ export function buildAttribution(ctx, facts) {
   }
 
   // 决策依据的事前可得性核查（注意：要用 ctx.reasoning 解析结果，而不是 decision.reasoning 原文）
+  const claims = ctx.reasoning?.claims ?? [];
   const reasoningHits = (ctx.reasoning?.matchedTerms ?? []).map((t) => t.term);
+  const unverifiable = (ctx.reasoning?.unmatchedTerms ?? []).map((t) => `${t.term}（${t.note}）`);
   if (reasoningHits.length > 0) {
+    // 证据引用必须指向"实际被用来核对的那几条序列"，并去重。
+    // 早先这里写成 pitEvidence.slice(0, 8)，在真实数据下正好取到同一序列的 8 个不同日期，
+    // 渲染出来是 8 个重复的 index:000300.SH —— 看起来像引用，实际上什么都说明不了。
+    const claimRefs = [...new Set(claims.map((c) => c.series).filter(Boolean))];
     out.push({
       id: 'A-2',
       type: 'attribution',
       title: '决策理由的可核验性',
       statement:
         `决策理由原文中可被事前数据核验的词项：${reasoningHits.join('、')}。` +
-        `其中命中事前数据的指标 ${ctx.matchedClaimCount} 项，未能匹配到事前数据的 ${ctx.unmatchedClaimCount} 项。`,
-      confidence: ctx.unmatchedClaimCount === 0 ? 'high' : 'low',
-      confidenceReason: ctx.unmatchedClaimCount === 0
-        ? '理由中的可核验词项均有对应的事前数据字段。'
-        : '存在无法回到原始字段的理由表述，属于不可核验信息。',
-      evidenceRefs: pitEvidence.slice(0, 8).map((e) => e.series),
+        `其中 ${claims.filter((c) => !c.degraded).length} 个在决策时点有可用的对应指标，可直接核对；` +
+        (unverifiable.length
+          ? `${unverifiable.length} 个在当前数据源中没有对应字段，属于不可核验：${unverifiable.join('、')}。`
+          : '没有出现无对应字段的词项。'),
+      confidence: (ctx.reasoning?.unmatchedTerms.length ?? 0) === 0 ? 'high' : 'low',
+      confidenceReason:
+        (ctx.reasoning?.unmatchedTerms.length ?? 0) === 0
+          ? '理由中的可核验词项均有对应的事前数据字段，且都能回到原始取值。'
+          : '存在在当前数据源中无对应字段的理由表述，这部分内容无法核验，不应在归因中当作已知事实使用。',
+      evidenceRefs: claimRefs.length ? claimRefs : ['decisions.reasoning'],
       counterCheck: '对未能匹配的词项，不应在归因中当作已知事实使用。',
     });
   }

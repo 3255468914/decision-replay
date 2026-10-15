@@ -196,6 +196,9 @@ export function buildReport(dataset, decisionId, options = {}) {
       'dividendYield:': 400,
       'revenueYoy:': 400, // 财报：季频 + 披露时滞
       'netProfitYoy:': 400,
+      'roe:': 400,
+      'grossMargin:': 400,
+      'assetsDebtRatio:': 400,
       'nplRatio:': 400,
       'pmi:': 40, // 月频宏观
     },
