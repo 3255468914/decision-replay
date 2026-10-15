@@ -3,7 +3,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadDataset, buildReport, sanitizeOutput, assertCompliant, COMPLIANCE_DISCLAIMER } from '../src/index.js';
+import { loadDataset, buildReport, sanitizeOutput, assertCompliant, COMPLIANCE_DISCLAIMER, analyzeReasoning } from '../src/index.js';
 
 const ds = loadDataset();
 
@@ -194,4 +194,70 @@ test('时点闸门单调性：决策时点后移，事前证据只增不减、�
   const last = seq.at(-1).r.pit;
   assert.ok(last.exAnteCount > first.exAnteCount, '时点后移 90 天后事前证据应确有增加');
   assert.ok(last.exPostCount < first.exPostCount, '时点后移 90 天后事后证据应确有减少');
+});
+
+/* ------------------------------------------------------------------ */
+/* 证据引用的可核对性                                                  */
+/* ------------------------------------------------------------------ */
+
+test('归因的证据引用必须去重，且每一处都能指向真实存在的序列', () => {
+  // 曾经的缺陷：A-2 的 evidenceRefs 写成 pitEvidence.slice(0, 8)，
+  // 在真实数据下恰好取到同一序列的 8 个日期，渲染出 8 个重复的 index:000300.SH。
+  // 页面完全正常、测试全绿，但"引用"其实什么都没说明。这条断言就是为它加的。
+  const datasets = [loadDataset()];
+  for (const src of ['real']) {
+    try {
+      datasets.push(loadDataset({ source: src }));
+    } catch {
+      /* 未生成真实数据快照时跳过，不把环境问题当失败 */
+    }
+  }
+
+  for (const dataset of datasets) {
+    const knownSeries = new Set(dataset.market.map((p) => p.series));
+    for (const d of dataset.decisions) {
+      const r = buildReport(dataset, d.id);
+      for (const a of r.attribution) {
+        const seriesRefs = a.evidenceRefs.filter((x) => String(x).includes(':'));
+        assert.equal(
+          new Set(seriesRefs).size,
+          seriesRefs.length,
+          `${dataset.sourceId}/${d.id}/${a.id} 的证据引用出现重复：${seriesRefs.join(', ')}`,
+        );
+        for (const ref of seriesRefs) {
+          assert.ok(
+            knownSeries.has(ref),
+            `${dataset.sourceId}/${d.id}/${a.id} 引用了不存在的序列 ${ref}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('理由中的词项若在数据源里没有对应字段，必须被判为不可核验（而不是悄悄略过）', () => {
+  // 直接给一段"缺少股息率字段"的事前证据，验证解析器会把「股息」判为不可核验。
+  // 用构造证据而不是整个数据集，是为了让这条断言不依赖任何具体数据源是否存在。
+  const evidenceWithoutDividend = [
+    { series: 'price:000001.SZ', asOf: '2024-01-05T15:00:00+08:00', publishedAt: '2024-01-05T15:00:00+08:00', value: 9.1, unit: 'CNY/股' },
+    { series: 'pb:000001.SZ', asOf: '2024-01-05T15:00:00+08:00', publishedAt: '2024-01-05T15:00:00+08:00', value: 0.44, unit: '倍' },
+  ];
+  const r = analyzeReasoning('市净率只有 0.44 倍，股息率超过 7%', evidenceWithoutDividend);
+  const termNames = (list) => list.map((t) => t.term);
+  assert.ok(termNames(r.matchedTerms).includes('市净率'), `「市净率」应能匹配到 pb 字段，实际 matched=${termNames(r.matchedTerms).join(',')}`);
+  assert.ok(termNames(r.unmatchedTerms).includes('股息'), `「股息」应被判为不可核验，实际 unmatched=${termNames(r.unmatchedTerms).join(',')}`);
+  assert.ok(r.unmatchedTerms.every((t) => t.expectSeries.every((s) => !evidenceWithoutDividend.some((e) => String(e.series).startsWith(s)))));
+});
+
+test('证据引用指向的是「决策时点可得的最新一期」，而不是数组里碰巧靠前的那条', () => {
+  const evidence = [
+    { series: 'peTtm:X', asOf: '2023-01-06T15:00:00+08:00', publishedAt: '2023-01-06T15:00:00+08:00', value: 10, unit: '倍' },
+    { series: 'peTtm:X', asOf: '2024-03-06T15:00:00+08:00', publishedAt: '2024-03-06T15:00:00+08:00', value: 27.28, unit: '倍' },
+    { series: 'peTtm:X', asOf: '2023-06-02T15:00:00+08:00', publishedAt: '2023-06-02T15:00:00+08:00', value: 15, unit: '倍' },
+  ];
+  const r = analyzeReasoning('估值分位已经在低位', evidence);
+  const claim = r.claims.find((c) => c.term === '估值' || c.term === '分位');
+  assert.ok(claim, '应至少解析出一个估值类主张');
+  assert.equal(claim.value, 27.28, `应引用最新一期（27.28），实际 ${claim.value}`);
+  assert.equal(claim.asOf.slice(0, 10), '2024-03-06');
 });
