@@ -17,7 +17,7 @@
 
 # ③ 关联并推送
 cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
-git remote add origin https://github.com/<你的用户名>/decision-replay.git
+git remote add origin https://github.com/3255468914/decision-replay.git
 git push -u origin main
 # 弹出浏览器 → 用 GitHub 账号登录授权（本机已装 Git Credential Manager 2.9.0，不需要手建 token）
 
@@ -60,58 +60,54 @@ git push -u origin main
 
 ---
 
-## 2. 推送前必须先定：提交作者是谁
+## 2. 推送前必须先定：提交作者是谁（✅ 已完成）
 
 **这是本文唯一一件"做完就不好改"的事。**
 
-当前**全部**提交的作者都是仓库级配置里的占位身份：
+~~当前全部提交的作者都是仓库级配置里的占位身份 `Candidate <candidate@example.com>`。~~
 
+**2026-10-15 已处理完毕**：全部提交已通过 `filter-branch` 重写为
+`3255468914 <3255468914@qq.com>`，仓库级 `user.name` / `user.email` 同步更新。
+核对命令（应只显示这一个身份）：
+
+```bash
+git log --format="%h  %an <%ae>" | sort -u -k2
 ```
-Candidate <candidate@example.com>
-```
 
-推上去之后，**这个作者名会公开显示在每个提交上，也不会关联到你的 GitHub 账号**（贡献图是灰的）。所以要分两种情况处理：
+> 说明：提交用的是 QQ 邮箱 `3255468914@qq.com`。它能在 GitHub 上正确关联账号的前提是
+> 该邮箱已添加到你的 GitHub 账号（`Settings → Emails` 里能看到它）。如果没添加，
+> 贡献图会是灰的——但提交上仍显示此作者名，不影响评阅。
+> 若你更希望不暴露真实邮箱，可以在 GitHub `Settings → Emails` 里拿到
+> `<数字ID>+3255468914@users.noreply.github.com`，照下面的原始命令重写一遍即可（推送前都来得及）。
 
-### 情况 A：就用这个身份（不介意）
-
-什么都不用做，跳到第 3 节。适合"交付物不需要关联个人账号"的场景。
-
-### 情况 B：改成你自己的身份（推荐）
-
-因为还没有 remote、也没有协作者，直接在本地重写全部提交最省事：
+<details>
+<summary>原始操作命令（已执行，留档备查）</summary>
 
 ```bash
 cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
 
-# ① 先把仓库级占位配置删掉，避免它覆盖
-git config --unset user.name
-git config --unset user.email
+# ① 更新仓库级配置
+git config user.name "3255468914"
+git config user.email "3255468914@qq.com"
 
 # ② 重写全部提交的作者与提交者
 git filter-branch --env-filter '
-export GIT_AUTHOR_NAME="你的名字"
-export GIT_AUTHOR_EMAIL="你的邮箱"
-export GIT_COMMITTER_NAME="你的名字"
-export GIT_COMMITTER_EMAIL="你的邮箱"
+export GIT_AUTHOR_NAME="3255468914"
+export GIT_AUTHOR_EMAIL="3255468914@qq.com"
+export GIT_COMMITTER_NAME="3255468914"
+export GIT_COMMITTER_EMAIL="3255468914@qq.com"
 ' --tag-name-filter cat -- --branches --tags
 
-# ③ 核对（应显示你自己的名字和邮箱）
+# ③ 核对
 git log --format="%h  %an <%ae>" | sort -u
 ```
 
 > `git filter-branch` 会打印一段"该命令已被弃用"的提示，**可以忽略**——它推荐替代品 `git filter-repo` 需要额外安装，
 > 十几二十个提交的规模，`filter-branch` 是秒级完成，没必要多装一个工具。
-
-**关于填哪个邮箱**——如果你不希望真实邮箱出现在公开仓库里，GitHub 提供了一个专用邮箱：
-
-```
-<你的数字ID>+<你的用户名>@users.noreply.github.com
-```
-
-在 GitHub `Settings → Emails` 页面能看到它。用这个邮箱提交，同样会正确关联到你的账号与贡献图，但不会暴露真实邮箱。推荐用它。
+</details>
 
 > **如果已经推上去了才发现要改**：本地照上面重写后，需要 `git push --force-with-lease origin main`。
-> 所以更好的做法是**现在就定**。另外，`--force-with-lease` 比 `--force` 安全：如果远端有你不知道的新提交，它会拒绝而不是覆盖。
+> 所以更好的做法是**推送前就定**。另外，`--force-with-lease` 比 `--force` 安全：如果远端有你不知道的新提交，它会拒绝而不是覆盖。
 
 ---
 
@@ -133,7 +129,7 @@ git log --format="%h  %an <%ae>" | sort -u
 创建完你会看到一页"quick setup"提示。**忽略它给出的那些命令**（它建议 `git init` / `git add` / `git commit`，你本地全都做完了），只需要记下仓库地址：
 
 ```
-https://github.com/<你的用户名>/decision-replay.git
+https://github.com/3255468914/decision-replay.git
 ```
 
 > **关于 License**：如果是笔试交付物、暂时不希望别人随意使用，**不选 license 就是"保留所有权利"**，这是默认状态，无需额外操作。
@@ -146,8 +142,8 @@ https://github.com/<你的用户名>/decision-replay.git
 ```bash
 cd "D:/workbuddy file/2026-10-15-15-42-19/decision-replay"
 
-# 关联远端（把 <你的用户名> 换成实际值）
-git remote add origin https://github.com/<你的用户名>/decision-replay.git
+# 关联远端（把 3255468914 换成实际值）
+git remote add origin https://github.com/3255468914/decision-replay.git
 
 # 确认关联正确
 git remote -v
@@ -179,7 +175,7 @@ Delta compression using up to 8 threads
 Compressing objects: 100% (52/52), done.
 Writing objects: 100% (78/78), 1.86 MiB | 3.20 MiB/s, done.
 Total 78 (delta 24), reused 0 (delta 0), pack-reused 0
-To https://github.com/<你的用户名>/decision-replay.git
+To https://github.com/3255468914/decision-replay.git
  * [new branch]      main -> main
 branch 'main' set up to track 'origin/main'.
 ```
@@ -193,7 +189,7 @@ branch 'main' set up to track 'origin/main'.
 
 ## 5. 第三步：推送后核对（6 项）
 
-打开 `https://github.com/<你的用户名>/decision-replay`，逐项对：
+打开 `https://github.com/3255468914/decision-replay`，逐项对：
 
 | # | 检查项 | 预期 |
 | --- | --- | --- |
@@ -223,7 +219,7 @@ branch 'main' set up to track 'origin/main'.
 ```markdown
 ## 演示视频（90 秒）
 
-- 直接下载：<https://github.com/<你的用户名>/decision-replay/releases/download/v1.0/demo.mp4>
+- 直接下载：<https://github.com/3255468914/decision-replay/releases/download/v1.0/demo.mp4>
 - 脚本与分镜：见 [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)
 ```
 
@@ -260,7 +256,7 @@ git filter-branch --force --index-filter \
 说明之前加过 remote，改成更新地址即可：
 
 ```bash
-git remote set-url origin https://github.com/<你的用户名>/decision-replay.git
+git remote set-url origin https://github.com/3255468914/decision-replay.git
 ```
 
 ### 7.3 `error: failed to push some refs` / `Updates were rejected`
@@ -308,7 +304,7 @@ git ls-files | wc -l                                # 应为 52
 du -sh .git                                         # 应为 2.2M 左右
 
 # ── 关联并推送 ────────────────────────────────────────────────
-git remote add origin https://github.com/<你的用户名>/decision-replay.git
+git remote add origin https://github.com/3255468914/decision-replay.git
 git remote -v
 git push -u origin main
 

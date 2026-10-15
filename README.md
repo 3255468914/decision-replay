@@ -471,7 +471,7 @@ npm run analyze:fault
 | `docs: 修正 90 秒脚本的旁白字数（实测 365 字，非估算的 396）` | `docs/DEMO_SCRIPT.md` |
 | `docs: 新增 GitHub 推送指南，修正过期注释与 README 重复小节` | `docs/PUBLISH.md`、`.env.example`、`.gitattributes`、`README.md` |
 
-> **公开仓库地址**：`<待填>` —— 推送步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md)（含推送前的密钥自检与作者信息处理）。
+> **公开仓库地址**：<https://github.com/3255468914/decision-replay> —— 推送步骤见 [`docs/PUBLISH.md`](docs/PUBLISH.md)（含推送前的密钥自检与作者信息处理）。
 >
 > 除上表所列，另有若干条纯文档修订提交（数字校对、措辞修正等）未单列。
 
